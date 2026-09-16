@@ -65,12 +65,7 @@ Once all images (`Slide_001.png`, `Slide_002.png`, etc.) are downloaded to your 
 - [PDF24 Tools](https://tools.pdf24.org/en/images-to-pdf)
 - Etc.
 
-### Option B: Using ImageMagick
-```bash
-magick convert Slide_*.png Presentation.pdf
-```
-
-### Option C: Using Python (`img2pdf`)
+### Option B: Using Python (`img2pdf`)
 ```bash
 pip install img2pdf
 ```
@@ -97,3 +92,13 @@ print("Successfully merged into Presentation.pdf")
 | **Slides skipping or jumping** | Multiple events dispatched simultaneously. | The script uses a waterfall ladder that only fires subsequent events if earlier ones failed. Do not click manually during execution. |
 | **Images inside slide are blank** | Cross-Origin or async delay in fetching sub-assets. | Ensure `fetch(href)` and `Promise.all` are allowed. If the deck has heavy images, increase `sleep(800)` to `sleep(1500)`. |
 | **TrustedHTML assignment blocked** | Direct injection of `.innerHTML` blocked by CSP. | The script avoids `.innerHTML` injection and uses native DOM cloning and XML serialization. |
+
+---
+
+## ⚠️ Disclaimer
+
+This tool is intended strictly for educational, personal archival, and fair-use reference purposes.
+
+- **Intellectual Property**: Respect copyright laws and content ownership. Do not use this script to scrape, redistribute, or commercially exploit proprietary presentations without explicit authorization from the rightful content owner.
+- **Platform Compliance**: Users are solely responsible for adhering to Google's Terms of Service and applicable privacy policies.
+- **No Warranty & Liability**: This software is provided "as is", without warranty of any kind. The author assumes no liability for any misuse, system rate-limiting, or data issues resulting from the execution of this script.
