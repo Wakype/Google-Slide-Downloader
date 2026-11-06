@@ -51,7 +51,28 @@ describe("captureSlide", () => {
       width: 800,
       height: 600,
       reason: null,
+      warning: null,
     });
+  });
+
+  it("warns when an embedded image cannot be inlined", async () => {
+    setupSvg();
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const result = await captureSlide(document, {
+      fetchImageAsDataUrl: vi
+        .fn()
+        .mockRejectedValue(new Error("blocked by CORS")),
+      rasterize: vi.fn(async () => ({
+        dataUrl: "data:image/png;base64,OUT",
+        width: 800,
+        height: 600,
+      })),
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.warning).toContain("1 embedded image");
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
   });
 
   it("returns a failure when no SVG is present", async () => {

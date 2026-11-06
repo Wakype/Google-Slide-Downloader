@@ -286,6 +286,12 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+.slide-warning {
+  color: var(--warning);
+  font-size: 11px;
+  font-weight: 600;
+}
+
 .icon-button {
   display: inline-flex;
   align-items: center;

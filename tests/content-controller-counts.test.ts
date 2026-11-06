@@ -39,6 +39,7 @@ describe("content capture controller counts", () => {
         dataUrl: "data:image/png;base64,AAAA",
         width: 1920,
         height: 1080,
+        warning: null,
       });
       return summary;
     });

@@ -4,7 +4,7 @@ import {
   createCaptureSlideDeps,
 } from "./capture/capture-slide";
 import { createContentController } from "./content/controller";
-import type { RunCaptureMessage } from "./shared/messages";
+import type { PingMessage, RunCaptureMessage } from "./shared/messages";
 
 const slideDeps = createCaptureSlideDeps();
 
@@ -26,7 +26,19 @@ function isRunCapture(message: unknown): message is RunCaptureMessage {
   );
 }
 
+function isPing(message: unknown): message is PingMessage {
+  return (
+    typeof message === "object" &&
+    message !== null &&
+    (message as { type?: unknown }).type === "PING"
+  );
+}
+
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  if (isPing(message)) {
+    sendResponse(controller.ping());
+    return false;
+  }
   if (!isRunCapture(message)) return false;
   sendResponse(controller.run(message));
   return false;

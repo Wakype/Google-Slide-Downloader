@@ -29,7 +29,7 @@ storage, and delivery into proper extension surfaces.
 
 - Editing, creating, or converting PPTX/PDF files inside the extension.
 - Private Google Slides editor pages with a different DOM. Capture targets the viewer
-  used by `/pub`, `/pubembed`, and `/present`.
+  used by `/pub`, `/pubembed`, `/present`, `/embed`, and `/preview`.
 - OCR, speaker notes, animations, or video export.
 - Cloud upload, analytics, telemetry, or any server component.
 - Pre-filling the PDF24 upload. A browser cannot attach local files to a third-party

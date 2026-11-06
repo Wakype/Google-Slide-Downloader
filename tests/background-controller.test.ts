@@ -39,7 +39,12 @@ function createFakeChrome(): FakeChrome {
   const tabs = {
     query: vi.fn(async () => [tab]),
     update: vi.fn(async () => tab),
-    sendMessage: vi.fn(async () => ({ ok: true })),
+    sendMessage: vi.fn(async (_tabId: number, message: unknown) => {
+      if ((message as { type?: string }).type === "PING") {
+        return { ok: true, running: true };
+      }
+      return { ok: true };
+    }),
     create: vi.fn(async () => ({ id: 99 }) as chrome.tabs.Tab),
   };
   const action = {
@@ -130,7 +135,7 @@ describe("background capture controller", () => {
         sessionId: "session-1",
       }),
     );
-    expect(chrome.action.setBadgeText).toHaveBeenCalledWith({ text: "0/…" });
+    expect(chrome.action.setBadgeText).toHaveBeenCalledWith({ text: "0" });
     expect(chrome.sessionStorage.get("active:7")).toBe("session-1");
   });
 
@@ -173,6 +178,82 @@ describe("background capture controller", () => {
     expect(await store.getSession("session-2")).toBeUndefined();
   });
 
+  it("recovers a stale capturing session when the tab is no longer running", async () => {
+    const chrome = createFakeChrome();
+    await store.createSession({ ...baseSession("stale"), createdAt: 0 });
+    chrome.sessionStorage.set("active:7", "stale");
+    chrome.tabs.sendMessage.mockImplementation(
+      async (_tabId: number, message: unknown) => {
+        if ((message as { type?: string }).type === "PING") {
+          return { ok: true, running: false };
+        }
+        return { ok: true };
+      },
+    );
+    const controller = createBackgroundController({
+      chrome: chrome.api,
+      store,
+      now: () => 1,
+      uuid: () => "session-2",
+    });
+
+    const result = await controller.startCapture();
+
+    expect(result.ok).toBe(true);
+    expect((await store.getSession("stale"))?.status).toBe("error");
+    expect(chrome.sessionStorage.get("active:7")).toBe("session-2");
+  });
+
+  it("recovers when the stale tab has no content receiver", async () => {
+    const chrome = createFakeChrome();
+    await store.createSession({ ...baseSession("stale"), createdAt: 0 });
+    chrome.sessionStorage.set("active:7", "stale");
+    chrome.tabs.sendMessage.mockImplementation(
+      async (_tabId: number, message: unknown) => {
+        if ((message as { type?: string }).type === "PING") {
+          throw new Error("no receiver");
+        }
+        return { ok: true };
+      },
+    );
+    const controller = createBackgroundController({
+      chrome: chrome.api,
+      store,
+      now: () => 1,
+      uuid: () => "session-2",
+    });
+
+    const result = await controller.startCapture();
+
+    expect(result.ok).toBe(true);
+    expect((await store.getSession("stale"))?.status).toBe("error");
+  });
+
+  it("reports a content-script refusal instead of a phantom success", async () => {
+    const chrome = createFakeChrome();
+    chrome.tabs.sendMessage.mockImplementation(
+      async (_tabId: number, message: unknown) => {
+        if ((message as { type?: string }).type === "PING") {
+          return { ok: true, running: false };
+        }
+        return { ok: false, error: "already-running" };
+      },
+    );
+    const controller = createBackgroundController({
+      chrome: chrome.api,
+      store,
+      now: () => 1,
+      uuid: () => "session-1",
+    });
+
+    const result = await controller.startCapture();
+
+    expect(result).toEqual({ ok: false, error: "already-running" });
+    expect((await store.getSession("session-1"))?.status).toBe("error");
+    expect(chrome.sessionStorage.has("active:7")).toBe(false);
+    expect(chrome.action.setBadgeText).toHaveBeenLastCalledWith({ text: "" });
+  });
+
   it("injects the content script when the tab has no receiver", async () => {
     const chrome = createFakeChrome();
     chrome.tabs.sendMessage
@@ -213,6 +294,7 @@ describe("background capture controller", () => {
       dataUrl: "data:image/png;base64,aGVsbG8=",
       width: 1920,
       height: 1080,
+      warning: "1 embedded image could not be inlined.",
     });
 
     expect(ack).toEqual({ ok: true });
@@ -223,6 +305,7 @@ describe("background capture controller", () => {
       filename: "Slide_001.png",
       width: 1920,
       height: 1080,
+      warning: "1 embedded image could not be inlined.",
     });
     expect(slides[0]?.blob.size).toBe(5);
     expect((await store.getSession("session-1"))?.captured).toBe(1);

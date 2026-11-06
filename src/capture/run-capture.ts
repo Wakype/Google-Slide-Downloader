@@ -26,7 +26,9 @@ export async function runCapture(
 ): Promise<CaptureSummary> {
   const maxSlides = Math.min(options.maxSlides ?? MAX_SLIDES, MAX_SLIDES);
   const detectedTotal = parseTotalSlides(options.document);
-  const total = detectedTotal ?? maxSlides;
+  const limit = Math.min(detectedTotal ?? maxSlides, maxSlides);
+  const progressTotal =
+    detectedTotal !== null && detectedTotal <= maxSlides ? detectedTotal : 0;
   const settleMs = options.settleMs ?? TIMING.settleMs;
   const advanceAttempts = options.advanceAttempts ?? TIMING.advanceAttempts;
   const advanceRetryMs = options.advanceRetryMs ?? TIMING.advanceRetryMs;
@@ -37,13 +39,17 @@ export async function runCapture(
   let cancelled = false;
   let error: string | null = null;
 
-  for (let index = 1; index <= total && index <= maxSlides; index += 1) {
+  for (let index = 1; index <= limit; index += 1) {
     if (options.isCancelled?.()) {
       cancelled = true;
       break;
     }
 
-    await options.onProgress({ current: index, total, failed: [...failed] });
+    await options.onProgress({
+      current: index,
+      total: progressTotal,
+      failed: [...failed],
+    });
 
     let result: CaptureResult;
     try {
@@ -55,6 +61,7 @@ export async function runCapture(
         width: 0,
         height: 0,
         reason: toErrorMessage(captureError),
+        warning: null,
       };
     }
 
@@ -65,6 +72,7 @@ export async function runCapture(
           dataUrl: result.dataUrl,
           width: result.width,
           height: result.height,
+          warning: result.warning,
         });
         captured += 1;
       } catch (storageError) {
@@ -75,9 +83,13 @@ export async function runCapture(
       failed.push(index);
     }
 
-    await options.onProgress({ current: index, total, failed: [...failed] });
+    await options.onProgress({
+      current: index,
+      total: progressTotal,
+      failed: [...failed],
+    });
 
-    if (index >= total || index >= maxSlides) break;
+    if (index >= limit) break;
 
     let moved = false;
     for (let attempt = 1; attempt <= advanceAttempts; attempt += 1) {
@@ -91,12 +103,17 @@ export async function runCapture(
     }
 
     if (!moved) {
-      reachedEnd = true;
+      reachedEnd = detectedTotal !== null;
       break;
     }
 
     await options.sleep(settleMs);
   }
+
+  const total =
+    detectedTotal !== null && detectedTotal <= maxSlides
+      ? detectedTotal
+      : captured + failed.length;
 
   return { total, captured, failed, reachedEnd, cancelled, error };
 }

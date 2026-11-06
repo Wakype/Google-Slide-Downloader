@@ -5,6 +5,7 @@ import type {
   CaptureErrorMessage,
   CaptureProgressMessage,
   CaptureSlideMessage,
+  PingResponse,
   RunCaptureMessage,
 } from "../shared/messages";
 import { isAck } from "../shared/messages";
@@ -31,6 +32,7 @@ export interface ContentControllerDeps {
 
 export interface ContentController {
   isRunning(): boolean;
+  ping(): PingResponse;
   run(message: RunCaptureMessage): Ack;
   whenIdle(): Promise<void>;
 }
@@ -69,6 +71,7 @@ export function createContentController(
             dataUrl: slide.dataUrl,
             width: slide.width,
             height: slide.height,
+            warning: slide.warning ?? null,
           };
           const response = await deps.runtime.sendMessage(payload);
           if (!isAck(response)) throw new Error("slide-not-stored");
@@ -141,6 +144,7 @@ export function createContentController(
 
   return {
     isRunning: () => currentRun !== null,
+    ping: () => ({ ok: true, running: currentRun !== null }),
     run,
     whenIdle: async () => {
       await currentRun;

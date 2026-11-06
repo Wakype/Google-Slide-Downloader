@@ -8,6 +8,7 @@ const okResult = (index: number): CaptureResult => ({
   width: 1920,
   height: 1080,
   reason: null,
+  warning: null,
 });
 
 const failedResult: CaptureResult = {
@@ -16,6 +17,7 @@ const failedResult: CaptureResult = {
   width: 0,
   height: 0,
   reason: "rasterize-failed",
+  warning: null,
 };
 
 const immediateSleep = () => Promise.resolve();
@@ -73,7 +75,7 @@ describe("runCapture", () => {
     expect(summary.reachedEnd).toBe(false);
   });
 
-  it("stops when the deck no longer advances", async () => {
+  it("stops when an unknown-size deck no longer advances", async () => {
     document.body.innerHTML = `<div class="punch-viewer-container"></div>`;
     const capture = vi.fn((index: number) => Promise.resolve(okResult(index)));
 
@@ -90,6 +92,23 @@ describe("runCapture", () => {
       advanceRetryMs: 0,
     });
 
+    expect(summary.captured).toBe(1);
+    expect(summary.reachedEnd).toBe(false);
+  });
+
+  it("flags an early stop when the expected total is known", async () => {
+    document.body.innerHTML = `<div aria-setsize="5"></div>`;
+    const summary = await runCapture({
+      document,
+      sleep: immediateSleep,
+      capture: (index: number) => Promise.resolve(okResult(index)),
+      advance: () => Promise.resolve(false),
+      onSlide: () => Promise.resolve(),
+      onProgress: () => undefined,
+      settleMs: 0,
+    });
+
+    expect(summary.total).toBe(5);
     expect(summary.captured).toBe(1);
     expect(summary.reachedEnd).toBe(true);
   });
@@ -139,7 +158,7 @@ describe("runCapture", () => {
     expect(capture).toHaveBeenCalledTimes(1);
   });
 
-  it("falls back to maxSlides when the deck count is unknown", async () => {
+  it("reports the traversed count when an unknown-size deck stops advancing", async () => {
     document.body.innerHTML = `<div class="punch-viewer-container"></div>`;
     const advance = vi.fn(() => Promise.resolve(false));
 
@@ -154,8 +173,32 @@ describe("runCapture", () => {
       settleMs: 0,
     });
 
-    expect(summary.total).toBe(5);
-    expect(summary.reachedEnd).toBe(true);
+    expect(summary.total).toBe(1);
+    expect(summary.reachedEnd).toBe(false);
     expect(summary.captured).toBe(1);
+  });
+
+  it("reports the traversed count when an unknown-size deck advances", async () => {
+    document.body.innerHTML = `<div class="punch-viewer-container"></div>`;
+    let advances = 0;
+    const advance = vi.fn(async () => {
+      advances += 1;
+      return advances <= 2;
+    });
+
+    const summary = await runCapture({
+      document,
+      sleep: immediateSleep,
+      capture: (index: number) => Promise.resolve(okResult(index)),
+      advance,
+      onSlide: () => Promise.resolve(),
+      onProgress: () => undefined,
+      maxSlides: 5,
+      settleMs: 0,
+    });
+
+    expect(summary.total).toBe(3);
+    expect(summary.captured).toBe(3);
+    expect(summary.reachedEnd).toBe(false);
   });
 });

@@ -3,7 +3,7 @@ import type {
   CaptureStatus,
   SlideRecord,
 } from "../shared/types";
-import { formatCapturedAt, sanitizeFilenamePart } from "../shared/utils";
+import { buildDeckFolder, formatCapturedAt } from "../shared/utils";
 
 export interface PreviewSlide {
   index: number;
@@ -11,6 +11,7 @@ export interface PreviewSlide {
   downloadUrl: string;
   width: number;
   height: number;
+  warning: string | null;
 }
 
 export interface PreviewModel {
@@ -26,6 +27,8 @@ export interface PreviewModel {
   isEmpty: boolean;
   isDemo: boolean;
   missing: boolean;
+  reachedEnd: boolean;
+  degradedCount: number;
   downloadFolder: string;
   slides: PreviewSlide[];
 }
@@ -43,12 +46,15 @@ export function buildPreviewModel(
     sourceHost = "";
   }
 
+  const traversed = slides.length + session.failed.length;
+
   return {
     sessionId: session.id,
     title: session.title,
     sourceHost,
     capturedAt: formatCapturedAt(session.createdAt),
-    total: session.total ?? slides.length,
+    total:
+      session.total !== null && session.total > 0 ? session.total : traversed,
     captured: slides.length,
     failed: session.failed,
     status: session.status,
@@ -56,13 +62,16 @@ export function buildPreviewModel(
     isEmpty: slides.length === 0,
     isDemo,
     missing: false,
-    downloadFolder: `Slides/${sanitizeFilenamePart(session.title)}`,
+    reachedEnd: session.reachedEnd,
+    degradedCount: slides.filter((slide) => slide.warning).length,
+    downloadFolder: buildDeckFolder(session.title),
     slides: slides.map((slide) => ({
       index: slide.index,
       filename: slide.filename,
       downloadUrl: objectUrls.get(slide.id) ?? "",
       width: slide.width,
       height: slide.height,
+      warning: slide.warning ?? null,
     })),
   };
 }
@@ -82,6 +91,8 @@ export function createMissingModel(): PreviewModel {
     isEmpty: true,
     isDemo: false,
     missing: true,
+    reachedEnd: false,
+    degradedCount: 0,
     downloadFolder: "Slides",
     slides: [],
   };

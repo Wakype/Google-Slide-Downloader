@@ -72,6 +72,11 @@ function slideCard(
     element("p", "filename", slide.filename),
     element("p", "dimensions", `${slide.width} × ${slide.height}`),
   );
+  if (slide.warning) {
+    const warningLine = element("p", "slide-warning", "Missing images");
+    warningLine.title = slide.warning;
+    details.append(warningLine);
+  }
 
   const download = element("button", "icon-button");
   download.type = "button";
@@ -186,6 +191,24 @@ export function renderPreview(
 
   if (model.status === "error" && model.error && !model.missing) {
     main.append(banner("error", "Capture stopped", model.error));
+  }
+  if (model.reachedEnd) {
+    main.append(
+      banner(
+        "warning",
+        "Capture stopped early",
+        "The viewer stopped advancing before the end of the deck. Later slides may be missing.",
+      ),
+    );
+  }
+  if (model.degradedCount > 0) {
+    main.append(
+      banner(
+        "warning",
+        "Some slides have missing images",
+        `${model.degradedCount} slide(s) were captured without one or more embedded images.`,
+      ),
+    );
   }
   if (model.failed.length > 0) {
     main.append(

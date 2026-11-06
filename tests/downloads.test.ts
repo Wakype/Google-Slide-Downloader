@@ -15,6 +15,7 @@ const slides: PreviewSlide[] = [
     downloadUrl: "blob:one",
     width: 1920,
     height: 1080,
+    warning: null,
   },
   {
     index: 2,
@@ -22,6 +23,7 @@ const slides: PreviewSlide[] = [
     downloadUrl: "blob:two",
     width: 1920,
     height: 1080,
+    warning: null,
   },
 ];
 

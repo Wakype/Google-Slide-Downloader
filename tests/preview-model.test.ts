@@ -28,6 +28,7 @@ const slides: SlideRecord[] = [
     blob: new Blob(["one"], { type: "image/png" }),
     width: 1920,
     height: 1080,
+    warning: null,
   },
   {
     id: "session-1:2",
@@ -37,6 +38,7 @@ const slides: SlideRecord[] = [
     blob: new Blob(["two"], { type: "image/png" }),
     width: 1920,
     height: 1080,
+    warning: null,
   },
 ];
 
@@ -57,6 +59,8 @@ describe("buildPreviewModel", () => {
     expect(model.captured).toBe(2);
     expect(model.isEmpty).toBe(false);
     expect(model.downloadFolder).toBe("Slides/My Deck");
+    expect(model.reachedEnd).toBe(true);
+    expect(model.degradedCount).toBe(0);
     expect(model.slides[0]).toMatchObject({
       index: 1,
       filename: "Slide_001.png",
@@ -69,6 +73,30 @@ describe("buildPreviewModel", () => {
     expect(model.isEmpty).toBe(true);
     expect(model.total).toBe(2);
     expect(model.captured).toBe(0);
+  });
+
+  it("counts slides with missing embedded images", () => {
+    const model = buildPreviewModel(
+      session,
+      [
+        slides[0]!,
+        { ...slides[1]!, warning: "1 embedded image could not be inlined." },
+      ],
+      new Map([
+        ["session-1:1", "blob:one"],
+        ["session-1:2", "blob:two"],
+      ]),
+    );
+    expect(model.degradedCount).toBe(1);
+  });
+
+  it("uses the traversed count when the session total is unknown", () => {
+    const model = buildPreviewModel(
+      { ...session, total: null, captured: 1, failed: [2] },
+      slides.slice(0, 1),
+      new Map([["session-1:1", "blob:one"]]),
+    );
+    expect(model.total).toBe(2);
   });
 
   it("preserves failed slide indexes", () => {

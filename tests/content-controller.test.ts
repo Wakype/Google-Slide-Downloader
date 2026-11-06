@@ -45,6 +45,7 @@ describe("content capture controller", () => {
         dataUrl: "data:image/png;base64,AAAA",
         width: 1920,
         height: 1080,
+        warning: null,
       });
       await options.onProgress({ current: 2, total: 2, failed: [2] });
       return summary;
@@ -79,6 +80,33 @@ describe("content capture controller", () => {
       captured: 1,
       failed: [2],
     });
+  });
+
+  it("reports whether a capture is running", async () => {
+    let release: () => void = () => undefined;
+    const gate = new Promise<void>((resolve) => {
+      release = () => resolve();
+    });
+    const { runtime } = createRuntime();
+    const controller = createContentController({
+      runtime,
+      document,
+      sleep: () => Promise.resolve(),
+      capture: vi.fn(),
+      advance: vi.fn(),
+      runCaptureImpl: vi.fn(async () => {
+        await gate;
+        return summary;
+      }),
+    });
+
+    expect(controller.ping()).toEqual({ ok: true, running: false });
+    controller.run(runMessage);
+    expect(controller.ping()).toEqual({ ok: true, running: true });
+
+    release();
+    await controller.whenIdle();
+    expect(controller.ping()).toEqual({ ok: true, running: false });
   });
 
   it("rejects a second run while one is in progress", async () => {
@@ -146,6 +174,7 @@ describe("content capture controller", () => {
         dataUrl: "data:image/png;base64,AAAA",
         width: 1920,
         height: 1080,
+        warning: null,
       });
       return summary;
     });

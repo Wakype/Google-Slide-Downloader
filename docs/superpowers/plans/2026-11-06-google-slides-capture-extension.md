@@ -460,7 +460,7 @@ Final README, icons, demo mode, and the verified `dist/` build.
 
 1. Write `tests/popup.test.ts` in jsdom:
    - supported tab renders the ready state and enables Start;
-   - unsupported tab disables Start and explains `/pub` or `/pubembed`;
+   - unsupported tab disables Start and explains `/pub`, `/pubembed`, `/embed`, or `/preview`;
    - a `START_CAPTURE` rejection shows the error next to the button;
    - a successful start calls `window.close`;
    - the demo state renders without `chrome`.
@@ -502,7 +502,7 @@ Final README, icons, demo mode, and the verified `dist/` build.
 2. Finish `demo.ts` and run: PASS.
 3. Rewrite `README.md`:
    - Extension overview, build, load unpacked instructions.
-   - Usage: open `/pub` or `/pubembed`, click the icon, Start Capture.
+   - Usage: open `/pub`, `/pubembed`, `/embed`, or `/preview`, click the icon, Start Capture.
    - Preview actions and the PDF24 merge note (it accepts images).
    - Permissions and privacy.
    - Legacy console script section pointing at `downloadAsPNG.js`.

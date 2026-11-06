@@ -15,8 +15,11 @@ function asSvg(element: Element | null): SVGSVGElement | null {
 
 export function findSvg(doc: Document): SVGSVGElement | null {
   const container = doc.querySelector(SELECTORS.svgContainer);
-  const nested = container?.querySelector("svg") ?? null;
-  return asSvg(nested ?? doc.querySelector(SELECTORS.fallbackSvg));
+  return (
+    asSvg(container) ??
+    asSvg(container?.querySelector("svg") ?? null) ??
+    asSvg(doc.querySelector(SELECTORS.fallbackSvg))
+  );
 }
 
 export function findCoat(doc: Document): Element | null {

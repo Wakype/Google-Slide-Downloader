@@ -9,6 +9,14 @@ export interface RunCaptureMessage {
   title: string;
 }
 
+export interface PingMessage {
+  type: "PING";
+}
+
+export type PingResponse =
+  | { ok: true; running: boolean }
+  | { ok: false; error: string };
+
 export interface CaptureSlideMessage {
   type: "CAPTURE_SLIDE";
   sessionId: string;
@@ -17,6 +25,7 @@ export interface CaptureSlideMessage {
   dataUrl: string;
   width: number;
   height: number;
+  warning: string | null;
 }
 
 export interface CaptureProgressMessage {
@@ -48,6 +57,7 @@ export interface CaptureErrorMessage {
 export type RuntimeMessage =
   | StartCaptureMessage
   | RunCaptureMessage
+  | PingMessage
   | CaptureSlideMessage
   | CaptureProgressMessage
   | CaptureCompleteMessage

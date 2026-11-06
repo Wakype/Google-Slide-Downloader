@@ -12,15 +12,24 @@ export interface CaptureSlideDeps {
 }
 
 function failure(reason: string): CaptureResult {
-  return { ok: false, dataUrl: null, width: 0, height: 0, reason };
+  return {
+    ok: false,
+    dataUrl: null,
+    width: 0,
+    height: 0,
+    reason,
+    warning: null,
+  };
 }
 
 async function inlineImages(
   clone: SVGSVGElement,
   fetchImageAsDataUrl: (href: string) => Promise<string>,
-): Promise<void> {
+): Promise<string[]> {
   const images = Array.from(clone.querySelectorAll("image"));
-  await Promise.allSettled(
+  const failed: string[] = [];
+
+  await Promise.all(
     images.map(async (image) => {
       const href =
         image.getAttribute("href") ??
@@ -29,13 +38,20 @@ async function inlineImages(
 
       if (!href || href.startsWith("data:")) return;
 
-      const dataUrl = await fetchImageAsDataUrl(href);
-      image.removeAttribute("href");
-      image.removeAttributeNS(XLINK_NAMESPACE, "href");
-      image.removeAttribute("xlink:href");
-      image.setAttribute("href", dataUrl);
+      try {
+        const dataUrl = await fetchImageAsDataUrl(href);
+        image.removeAttribute("href");
+        image.removeAttributeNS(XLINK_NAMESPACE, "href");
+        image.removeAttribute("xlink:href");
+        image.setAttribute("href", dataUrl);
+      } catch (error) {
+        failed.push(href);
+        console.warn("Sub-image asset skipped:", href, error);
+      }
     }),
   );
+
+  return failed;
 }
 
 export async function captureSlide(
@@ -46,7 +62,7 @@ export async function captureSlide(
   if (!svg) return failure("svg-not-found");
 
   const clone = svg.cloneNode(true) as SVGSVGElement;
-  await inlineImages(clone, deps.fetchImageAsDataUrl);
+  const failedAssets = await inlineImages(clone, deps.fetchImageAsDataUrl);
 
   try {
     const raster = await deps.rasterize(clone);
@@ -56,6 +72,10 @@ export async function captureSlide(
       width: raster.width,
       height: raster.height,
       reason: null,
+      warning:
+        failedAssets.length > 0
+          ? `${failedAssets.length} embedded image(s) could not be inlined.`
+          : null,
     };
   } catch (error) {
     return failure(toErrorMessage(error));

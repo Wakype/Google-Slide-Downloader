@@ -31,6 +31,8 @@ function model(overrides: Partial<PreviewModel> = {}): PreviewModel {
     isEmpty: false,
     isDemo: false,
     missing: false,
+    reachedEnd: false,
+    degradedCount: 0,
     downloadFolder: "Slides/My deck",
     slides: [
       {
@@ -39,6 +41,7 @@ function model(overrides: Partial<PreviewModel> = {}): PreviewModel {
         downloadUrl: "blob:one",
         width: 1920,
         height: 1080,
+        warning: null,
       },
       {
         index: 2,
@@ -46,6 +49,7 @@ function model(overrides: Partial<PreviewModel> = {}): PreviewModel {
         downloadUrl: "blob:two",
         width: 1920,
         height: 1080,
+        warning: null,
       },
     ],
     ...overrides,
@@ -106,6 +110,33 @@ describe("renderPreview", () => {
     );
 
     expect(root.textContent).toContain("Slides 2, 4");
+  });
+
+  it("warns when the viewer stopped before the end of the deck", () => {
+    const root = document.getElementById("app") as HTMLElement;
+    renderPreview(root, model({ reachedEnd: true }), handlers());
+
+    expect(root.textContent).toContain("stopped early");
+  });
+
+  it("marks slides whose embedded images could not be inlined", () => {
+    const root = document.getElementById("app") as HTMLElement;
+    renderPreview(
+      root,
+      model({
+        degradedCount: 1,
+        slides: [
+          {
+            ...model().slides[0]!,
+            warning: "1 embedded image could not be inlined.",
+          },
+        ],
+      }),
+      handlers(),
+    );
+
+    expect(root.textContent).toContain("missing images");
+    expect(root.textContent).toContain("Missing images");
   });
 
   it("shows the capture error above successful slides", () => {

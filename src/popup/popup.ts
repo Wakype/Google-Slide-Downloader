@@ -66,7 +66,7 @@ function statusDetail(state: PopupState): string {
     case "ready":
       return state.title ?? "Published presentation detected.";
     case "unsupported":
-      return "Open a published Google Slides deck (/pub or /pubembed).";
+      return "Open a published Google Slides deck (/pub, /pubembed, /embed, or /preview).";
     case "starting":
       return "The popup closes and progress moves to the toolbar badge.";
     case "error":

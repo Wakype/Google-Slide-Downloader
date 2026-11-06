@@ -33,6 +33,7 @@ function slide(sessionId: string, index: number): SlideRecord {
     blob: new Blob([`slide-${index}`], { type: "image/png" }),
     width: 1920,
     height: 1080,
+    warning: null,
   };
 }
 

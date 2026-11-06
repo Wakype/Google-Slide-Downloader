@@ -22,6 +22,7 @@ export interface SlideRecord {
   blob: Blob;
   width: number;
   height: number;
+  warning: string | null;
 }
 
 export interface CaptureResult {
@@ -30,6 +31,7 @@ export interface CaptureResult {
   width: number;
   height: number;
   reason: string | null;
+  warning: string | null;
 }
 
 export interface CapturedSlide {
@@ -37,6 +39,7 @@ export interface CapturedSlide {
   dataUrl: string;
   width: number;
   height: number;
+  warning: string | null;
 }
 
 export interface CaptureProgress {

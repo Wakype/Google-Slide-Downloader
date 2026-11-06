@@ -5,7 +5,7 @@ export function isSlidesPresentationUrl(raw: string | undefined): boolean {
   try {
     const url = new URL(raw);
     if (url.hostname !== "docs.google.com") return false;
-    return /^\/presentation\/(?:.*\/)?(?:pub|pubembed|present)$/.test(
+    return /^\/presentation\/(?:.*\/)?(?:pub|pubembed|present|embed|preview)$/.test(
       url.pathname,
     );
   } catch {
@@ -68,11 +68,19 @@ export function sanitizeFilenamePart(value: string): string {
   return cleaned || "Presentation";
 }
 
+export function cleanDeckTitle(title: string): string {
+  return title.replace(/\s*[-–—]\s*Google Slides\s*$/i, "").trim();
+}
+
+export function buildDeckFolder(title: string): string {
+  return `Slides/${sanitizeFilenamePart(cleanDeckTitle(title))}`;
+}
+
 export function buildSlideDownloadPath(
   title: string,
   filename: string,
 ): string {
-  return `Slides/${sanitizeFilenamePart(title)}/${filename}`;
+  return `${buildDeckFolder(title)}/${filename}`;
 }
 
 export function formatCapturedAt(timestamp: number): string {

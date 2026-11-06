@@ -44,7 +44,7 @@ export function createDemoCapture(now: number = Date.now()): {
     failed: [],
     status: "complete",
     error: null,
-    reachedEnd: true,
+    reachedEnd: false,
   };
 
   const slides = Array.from({ length: 6 }, (_, offset) => {
@@ -61,6 +61,7 @@ export function createDemoCapture(now: number = Date.now()): {
       blob,
       width: 1920,
       height: 1080,
+      warning: null,
     } satisfies SlideRecord;
   });
 

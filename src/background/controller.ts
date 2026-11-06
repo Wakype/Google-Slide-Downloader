@@ -1,9 +1,11 @@
+import { isAck } from "../shared/messages";
 import type {
   Ack,
   CaptureCompleteMessage,
   CaptureErrorMessage,
   CaptureProgressMessage,
   CaptureSlideMessage,
+  PingMessage,
   RunCaptureMessage,
   StartCaptureResponse,
 } from "../shared/messages";
@@ -88,11 +90,50 @@ export function createBackgroundController(
     await deps.chrome.action.setBadgeText({ text });
   }
 
+  function badgeText(current: number, total: number): string {
+    return total > 0 ? `${current}/${total}` : `${current}`;
+  }
+
   async function openPreview(sessionId: string): Promise<void> {
     const url = deps.chrome.runtime.getURL(
       `preview.html?session=${encodeURIComponent(sessionId)}`,
     );
     await deps.chrome.tabs.create({ url });
+  }
+
+  async function captureIsAlive(tabId: number): Promise<boolean> {
+    try {
+      const response = await deps.chrome.tabs.sendMessage(tabId, {
+        type: "PING",
+      } satisfies PingMessage);
+      return (
+        typeof response === "object" &&
+        response !== null &&
+        (response as { ok?: unknown }).ok === true &&
+        (response as { running?: unknown }).running === true
+      );
+    } catch {
+      return false;
+    }
+  }
+
+  async function sendRunCapture(
+    tabId: number,
+    message: RunCaptureMessage,
+  ): Promise<Ack> {
+    const response = await deps.chrome.tabs.sendMessage(tabId, message);
+    return isAck(response) ? response : { ok: false, error: "content-not-ready" };
+  }
+
+  async function failStart(
+    sessionId: string,
+    tabId: number,
+    error: string,
+  ): Promise<StartCaptureResponse> {
+    await deps.store.updateSession(sessionId, { status: "error", error });
+    await deps.chrome.storage.session.remove(activeKey(tabId));
+    await setBadge("");
+    return { ok: false, error };
   }
 
   async function startCapture(): Promise<StartCaptureResponse> {
@@ -108,7 +149,8 @@ export function createBackgroundController(
     if (!isSlidesPresentationUrl(sourceUrl)) {
       return {
         ok: false,
-        error: "Open a published Google Slides deck (/pub or /pubembed) first.",
+        error:
+          "Open a published Google Slides deck (/pub, /pubembed, /embed, or /preview) first.",
       };
     }
 
@@ -118,10 +160,17 @@ export function createBackgroundController(
     if (typeof existingId === "string") {
       const session = await deps.store.getSession(existingId);
       if (session?.status === "capturing") {
-        return {
-          ok: false,
-          error: "A capture is already running in this tab.",
-        };
+        const alive = await captureIsAlive(tab.id);
+        if (alive) {
+          return {
+            ok: false,
+            error: "A capture is already running in this tab.",
+          };
+        }
+        await deps.store.updateSession(existingId, {
+          status: "error",
+          error: "The previous capture was interrupted.",
+        });
       }
       await deps.chrome.storage.session.remove(key);
     }
@@ -145,7 +194,7 @@ export function createBackgroundController(
     await deps.store.createSession(session);
     await deps.chrome.storage.session.set({ [key]: sessionId });
     await deps.chrome.tabs.update(tab.id, { active: true });
-    await setBadge("0/…");
+    await setBadge("0");
 
     const runMessage: RunCaptureMessage = {
       type: "RUN_CAPTURE",
@@ -154,28 +203,27 @@ export function createBackgroundController(
       title,
     };
 
+    let ack: Ack;
     try {
-      await deps.chrome.tabs.sendMessage(tab.id, runMessage);
+      ack = await sendRunCapture(tab.id, runMessage);
     } catch {
       try {
         await deps.chrome.scripting.executeScript({
           target: { tabId: tab.id },
           files: ["content.js"],
         });
-        await deps.chrome.tabs.sendMessage(tab.id, runMessage);
-      } catch (error) {
-        await deps.store.updateSession(sessionId, {
-          status: "error",
-          error: toErrorMessage(error),
-        });
-        await deps.chrome.storage.session.remove(key);
-        await setBadge("");
-        return {
-          ok: false,
-          error:
-            "Could not connect to the presentation tab. Reload it and try again.",
-        };
+        ack = await sendRunCapture(tab.id, runMessage);
+      } catch {
+        return failStart(
+          sessionId,
+          tab.id,
+          "Could not connect to the presentation tab. Reload it and try again.",
+        );
       }
+    }
+
+    if (!ack.ok) {
+      return failStart(sessionId, tab.id, ack.error);
     }
 
     return { ok: true, sessionId };
@@ -198,14 +246,15 @@ export function createBackgroundController(
         blob,
         width: message.width,
         height: message.height,
+        warning: message.warning ?? null,
       };
       await deps.store.putSlide(slide);
       const captured = session.captured + 1;
       await deps.store.updateSession(message.sessionId, {
         captured,
-        total: message.total,
+        total: message.total > 0 ? message.total : null,
       });
-      await setBadge(`${captured}/${message.total}`);
+      await setBadge(badgeText(captured, message.total));
       return { ok: true };
     } catch (error) {
       return { ok: false, error: toErrorMessage(error) };
@@ -218,10 +267,10 @@ export function createBackgroundController(
     const session = await deps.store.getSession(message.sessionId);
     if (!session) return;
     await deps.store.updateSession(message.sessionId, {
-      total: message.total,
+      total: message.total > 0 ? message.total : null,
       failed: message.failed,
     });
-    await setBadge(`${message.current}/${message.total}`);
+    await setBadge(badgeText(message.current, message.total));
   }
 
   async function finishSession(

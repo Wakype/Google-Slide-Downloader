@@ -29,6 +29,16 @@ describe("isSlidesPresentationUrl", () => {
         "https://docs.google.com/presentation/d/abc123/present",
       ),
     ).toBe(true);
+    expect(
+      isSlidesPresentationUrl(
+        "https://docs.google.com/presentation/d/e/2PACX-abc/embed",
+      ),
+    ).toBe(true);
+    expect(
+      isSlidesPresentationUrl(
+        "https://docs.google.com/presentation/d/e/2PACX-abc/preview",
+      ),
+    ).toBe(true);
   });
 
   it("rejects editor pages, other hosts, and malformed input", () => {
@@ -103,6 +113,12 @@ describe("download paths", () => {
     );
     expect(buildSlideDownloadPath("", "Slide_001.png")).toBe(
       "Slides/Presentation/Slide_001.png",
+    );
+  });
+
+  it("strips the browser title suffix from the deck folder", () => {
+    expect(buildSlideDownloadPath("My Deck - Google Slides", "Slide_001.png")).toBe(
+      "Slides/My Deck/Slide_001.png",
     );
   });
 });

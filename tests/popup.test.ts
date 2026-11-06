@@ -71,7 +71,7 @@ describe("renderPopup", () => {
       vi.fn(),
     );
 
-    expect(root.textContent).toContain("/pub or /pubembed");
+    expect(root.textContent).toContain("/pub, /pubembed, /embed, or /preview");
     expect(startButton(root).disabled).toBe(true);
   });
 
@@ -133,7 +133,7 @@ describe("popup controller", () => {
 
     await controller.init();
 
-    expect(root.textContent).toContain("/pub or /pubembed");
+    expect(root.textContent).toContain("/pub, /pubembed, /embed, or /preview");
     expect(startButton(root).disabled).toBe(true);
   });
 

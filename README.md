@@ -10,7 +10,7 @@ use, but the extension is the recommended workflow.
 ## Features
 
 - One-click capture from the toolbar popup.
-- Captures `/pub`, `/pubembed`, and `/present` Google Slides viewers.
+- Captures `/pub`, `/pubembed`, `/present`, `/embed`, and `/preview` Google Slides viewers.
 - Streams each slide to the extension worker as it is captured, so large decks do not
   sit in memory or in one giant message.
 - Progress on the toolbar badge (`12/40`), so the presentation tab can stay focused.
@@ -24,7 +24,7 @@ use, but the extension is the recommended workflow.
 - Chrome 116 or newer.
 - Node.js 20 or newer for building from source.
 - A Google Slides presentation published with **File → Share → Publish to web**
-  (`/pub` or `/pubembed`), or opened in the presentation viewer (`/present`).
+  (`/pub`, `/pubembed`, `/embed`, or `/preview`), or opened in the presentation viewer (`/present`).
 
 ## Build and load
 
@@ -147,7 +147,7 @@ docs/superpowers/          design and implementation plan
 
 | Issue | Cause | Solution |
 | --- | --- | --- |
-| **Start Capture is disabled** | The active tab is not a supported Slides viewer. | Open a `/pub`, `/pubembed`, or `/present` URL. |
+| **Start Capture is disabled** | The active tab is not a supported Slides viewer. | Open a `/pub`, `/pubembed`, `/present`, `/embed`, or `/preview` URL. |
 | **Capture stalls or skips slides** | The presentation tab was backgrounded or the viewer changed. | Keep the tab visible, reload, and try again. |
 | **Only some slides appear** | One or more slides failed to rasterize, or the deck ended early. | The preview lists failed slide numbers. Re-run the capture. |
 | **Images inside slides are blank** | A remote slide asset could not be inlined before rasterization. | Retry on a stable connection; heavy decks benefit from a longer settle time. |
