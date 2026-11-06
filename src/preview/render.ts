@@ -200,7 +200,7 @@ export function renderPreview(
     element(
       "p",
       "action-note",
-      "PDF24 opens after the downloads start. Add the PNGs there.",
+      "PDF24 opens in a new tab. Add the PNGs there.",
     ),
   );
 

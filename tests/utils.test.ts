@@ -1,11 +1,9 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import {
-  buildSlideDownloadPath,
   formatSlideFilename,
   getSlideSignature,
   isSlidesPresentationUrl,
   parseTotalSlides,
-  sanitizeFilenamePart,
 } from "../src/shared/utils";
 
 beforeEach(() => {
@@ -101,24 +99,3 @@ describe("getSlideSignature", () => {
   });
 });
 
-describe("download paths", () => {
-  it("removes reserved filename characters", () => {
-    expect(sanitizeFilenamePart("My: Deck / 2026?")).toBe("My Deck 2026");
-    expect(sanitizeFilenamePart("   ")).toBe("Presentation");
-  });
-
-  it("builds a slides folder path with a safe deck name", () => {
-    expect(buildSlideDownloadPath("My Deck", "slide_001.png")).toBe(
-      "Slides/My Deck/slide_001.png",
-    );
-    expect(buildSlideDownloadPath("", "slide_001.png")).toBe(
-      "Slides/Presentation/slide_001.png",
-    );
-  });
-
-  it("strips the browser title suffix from the deck folder", () => {
-    expect(buildSlideDownloadPath("My Deck - Google Slides", "slide_001.png")).toBe(
-      "Slides/My Deck/slide_001.png",
-    );
-  });
-});

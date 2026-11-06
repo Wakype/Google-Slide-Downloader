@@ -27,50 +27,53 @@ const slides: PreviewSlide[] = [
   },
 ];
 
-let calls: chrome.downloads.DownloadOptions[];
+let saved: Array<{ url: string; filename: string }>;
 let deps: DownloadDeps;
 
 beforeEach(() => {
-  calls = [];
+  saved = [];
   deps = {
-    download: vi.fn(async (options) => {
-      calls.push(options);
-      return 1;
-    }),
+    save: (url, filename) => {
+      saved.push({ url, filename });
+    },
     sleep: vi.fn(async () => undefined),
-    openTab: vi.fn(async () => undefined),
+    openTab: vi.fn(),
   };
 });
 
 describe("preview downloads", () => {
-  it("downloads one slide to the deck folder", async () => {
-    await downloadSlide(slides[0]!, "Slides/My deck", deps);
+  it("saves one slide with its filename", async () => {
+    await downloadSlide(slides[0]!, deps);
 
-    expect(calls).toEqual([
-      {
-        url: "blob:one",
-        filename: "Slides/My deck/slide_001.png",
-        conflictAction: "uniquify",
-        saveAs: false,
-      },
+    expect(saved).toEqual([
+      { url: "blob:one", filename: "slide_001.png" },
     ]);
   });
 
-  it("downloads all slides in index order with a gap", async () => {
-    await downloadAll(slides, "Slides/My deck", deps);
+  it("saves all slides in index order with a gap", async () => {
+    await downloadAll(slides, deps);
 
-    expect(calls.map((call) => call.filename)).toEqual([
-      "Slides/My deck/slide_001.png",
-      "Slides/My deck/slide_002.png",
+    expect(saved.map((entry) => entry.filename)).toEqual([
+      "slide_001.png",
+      "slide_002.png",
     ]);
     expect(deps.sleep).toHaveBeenCalledWith(TIMING.downloadGapMs);
   });
 
-  it("opens PDF24 after all downloads have started", async () => {
-    await downloadAllAndMerge(slides, "Slides/My deck", deps);
+  it("opens PDF24 before starting all downloads", async () => {
+    const order: string[] = [];
+    deps.save = (url, filename) => {
+      order.push(filename);
+      saved.push({ url, filename });
+    };
+    deps.openTab = vi.fn((url: string) => {
+      order.push(url);
+    });
 
-    expect(calls).toHaveLength(2);
+    await downloadAllAndMerge(slides, deps);
+
+    expect(order[0]).toBe(PDF24_MERGE_URL);
+    expect(saved).toHaveLength(2);
     expect(deps.openTab).toHaveBeenCalledWith(PDF24_MERGE_URL);
-    expect(deps.sleep).toHaveBeenCalledWith(TIMING.mergeOpenDelayMs);
   });
 });

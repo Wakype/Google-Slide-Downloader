@@ -34,7 +34,6 @@ function model(overrides: Partial<PreviewModel> = {}): PreviewModel {
     reachedEnd: false,
     limit: null,
     degradedCount: 0,
-    downloadFolder: "Slides/My deck",
     slides: [
       {
         index: 1,

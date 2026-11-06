@@ -57,32 +57,6 @@ export function getSlideSignature(doc: Document): string {
   return `${counterText}::${text.length}:${htmlLength}:${hashText(text)}`;
 }
 
-export function sanitizeFilenamePart(value: string): string {
-  const cleaned = value
-    .replace(/[<>:"/\\|?*\u0000-\u001f]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .replace(/[. ]+$/g, "")
-    .slice(0, 80)
-    .trim();
-  return cleaned || "Presentation";
-}
-
-export function cleanDeckTitle(title: string): string {
-  return title.replace(/\s*[-–—]\s*Google Slides\s*$/i, "").trim();
-}
-
-export function buildDeckFolder(title: string): string {
-  return `Slides/${sanitizeFilenamePart(cleanDeckTitle(title))}`;
-}
-
-export function buildSlideDownloadPath(
-  title: string,
-  filename: string,
-): string {
-  return `${buildDeckFolder(title)}/${filename}`;
-}
-
 export function formatCapturedAt(timestamp: number): string {
   return new Intl.DateTimeFormat(undefined, {
     dateStyle: "medium",

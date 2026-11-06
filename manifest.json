@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "Capture published Google Slides as high-resolution PNGs and merge them into a PDF.",
   "minimum_chrome_version": "116",
-  "permissions": ["tabs", "scripting", "downloads", "storage"],
+  "permissions": ["tabs", "scripting", "storage"],
   "host_permissions": [
     "https://docs.google.com/presentation/*",
     "https://docs.google.com/slides-images-rt/*",

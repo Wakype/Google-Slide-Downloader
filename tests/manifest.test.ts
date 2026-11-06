@@ -62,7 +62,7 @@ describe("extension manifest", () => {
   it("requests only the permissions the extension needs", () => {
     const manifest = readManifest();
     expect(manifest.permissions).toEqual(
-      expect.arrayContaining(["tabs", "scripting", "downloads", "storage"]),
+      expect.arrayContaining(["tabs", "scripting", "storage"]),
     );
     expect(manifest.host_permissions).toEqual(
       expect.arrayContaining([

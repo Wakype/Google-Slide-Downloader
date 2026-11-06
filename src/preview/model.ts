@@ -3,7 +3,7 @@ import type {
   CaptureStatus,
   SlideRecord,
 } from "../shared/types";
-import { buildDeckFolder, formatCapturedAt } from "../shared/utils";
+import { formatCapturedAt } from "../shared/utils";
 
 export interface PreviewSlide {
   index: number;
@@ -30,7 +30,6 @@ export interface PreviewModel {
   reachedEnd: boolean;
   limit: number | null;
   degradedCount: number;
-  downloadFolder: string;
   slides: PreviewSlide[];
 }
 
@@ -66,7 +65,6 @@ export function buildPreviewModel(
     reachedEnd: session.reachedEnd,
     limit: session.limit,
     degradedCount: slides.filter((slide) => slide.warning).length,
-    downloadFolder: buildDeckFolder(session.title),
     slides: slides.map((slide) => ({
       index: slide.index,
       filename: slide.filename,
@@ -96,7 +94,6 @@ export function createMissingModel(): PreviewModel {
     reachedEnd: false,
     limit: null,
     degradedCount: 0,
-    downloadFolder: "Slides",
     slides: [],
   };
 }

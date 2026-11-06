@@ -30,7 +30,6 @@ function model(): PreviewModel {
     reachedEnd: false,
     limit: null,
     degradedCount: 0,
-    downloadFolder: "Slides/My deck",
     slides: [slide(1), slide(2), slide(3)],
   };
 }
