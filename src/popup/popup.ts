@@ -83,8 +83,11 @@ export function renderPopup(
 
   const popup = element("div", "popup");
   const header = element("header", "popup-header");
-  const mark = element("div", "brand-mark");
-  mark.append(createIcon("slides"));
+  const mark = element("img", "brand-mark");
+  mark.src = "./icons/icon128.png";
+  mark.alt = "";
+  mark.width = 38;
+  mark.height = 38;
   const brandCopy = element("div", "brand-copy");
   brandCopy.append(
     element("p", "app-name", "Slides Capture"),
@@ -135,8 +138,11 @@ export function renderPopup(
   );
   const footer = element("footer", "popup-footer");
   footer.append(
-    element("span", "popup-footer-item", "PNG capture"),
-    element("span", "popup-footer-item", "PDF24 merge"),
+    element(
+      "p",
+      "popup-disclaimer",
+      "Educational and personal archival use only. Respect copyright and Google's Terms of Service.",
+    ),
   );
 
   popup.append(header, status);

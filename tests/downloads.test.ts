@@ -11,7 +11,7 @@ import type { PreviewSlide } from "../src/preview/model";
 const slides: PreviewSlide[] = [
   {
     index: 1,
-    filename: "Slide_001.png",
+    filename: "slide_001.png",
     downloadUrl: "blob:one",
     width: 1920,
     height: 1080,
@@ -19,7 +19,7 @@ const slides: PreviewSlide[] = [
   },
   {
     index: 2,
-    filename: "Slide_002.png",
+    filename: "slide_002.png",
     downloadUrl: "blob:two",
     width: 1920,
     height: 1080,
@@ -49,7 +49,7 @@ describe("preview downloads", () => {
     expect(calls).toEqual([
       {
         url: "blob:one",
-        filename: "Slides/My deck/Slide_001.png",
+        filename: "Slides/My deck/slide_001.png",
         conflictAction: "uniquify",
         saveAs: false,
       },
@@ -60,8 +60,8 @@ describe("preview downloads", () => {
     await downloadAll(slides, "Slides/My deck", deps);
 
     expect(calls.map((call) => call.filename)).toEqual([
-      "Slides/My deck/Slide_001.png",
-      "Slides/My deck/Slide_002.png",
+      "Slides/My deck/slide_001.png",
+      "Slides/My deck/slide_002.png",
     ]);
     expect(deps.sleep).toHaveBeenCalledWith(TIMING.downloadGapMs);
   });

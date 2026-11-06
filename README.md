@@ -15,7 +15,9 @@ use, but the extension is the recommended workflow.
   sit in memory or in one giant message.
 - Progress on the toolbar badge (`12/40`), so the presentation tab can stay focused.
 - Preview tab with a responsive thumbnail grid.
+- Click any slide to open a full-size lightbox with previous/next controls and a download button.
 - **Download all**, per-slide download buttons, and **Download all + Merge PDF**.
+- Report button in the preview header opens the GitHub bug-report template.
 - PDF24's Merge PDF page accepts PNG images directly and converts them into one PDF.
 - Typed TypeScript, Manifest V3, IndexedDB storage, and no remote code.
 
@@ -56,13 +58,20 @@ For development, `npm run watch` rebuilds on changes. Reload the extension from
    - The download icon on a card to save one slide.
    - **Download all + Merge PDF** to save every PNG, then open
      [PDF24 Merge PDF](https://tools.pdf24.org/en/merge-pdf) in a new tab.
+6. Click a slide thumbnail to open the full-size lightbox. Use the arrow buttons or
+   Left/Right keys to move between slides, Escape to close, and **Download** in the
+   lightbox to save the visible slide.
 
 PDF24 opens after the downloads start. A browser cannot attach local files to another
 site, so add the downloaded PNGs in PDF24 and merge them there. PDF24 accepts PNG and JPG
 images directly.
 
-Files are named `Slide_001.png`, `Slide_002.png`, and so on, inside a per-deck folder
+Files are named `slide_001.png`, `slide_002.png`, and so on, inside a per-deck folder
 under `Downloads/Slides/`.
+
+Use the download icon or the lightbox **Download** button to get that filename. Using the
+browser's context menu on a preview image saves the underlying blob URL, which Chrome names
+with a UUID instead.
 
 ## How it works
 
@@ -155,6 +164,13 @@ docs/superpowers/          design and implementation plan
 | **Some slides say "Missing images"** | The worker could not fetch an embedded slide image, so that image was removed and the slide was still captured. | Reload the presentation and retry; check the extension's service-worker console for the asset URL. |
 | **PDF24 has no files** | The browser cannot pre-fill a third-party upload. | Drag the downloaded PNGs from `Downloads/Slides/` into PDF24. |
 | **Content script does not respond** | The tab was open before the extension was installed or reloaded. | Reload the presentation tab, or retry; the worker injects the script automatically. |
+
+## Reporting an issue
+
+Use the flag button in the preview header, or open the
+[bug report form](https://github.com/Wakype/Google-Slide-Downloader/issues/new?template=bug_report.yml)
+directly. The form asks for the presentation URL (optional), Chrome and extension versions,
+reproduction steps, and console errors.
 
 ## Legacy console script
 

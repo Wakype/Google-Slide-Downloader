@@ -27,19 +27,12 @@ body {
 }
 
 .brand-mark {
-  display: grid;
-  place-items: center;
+  display: block;
   width: 38px;
   height: 38px;
   border-radius: 11px;
-  background: var(--accent);
-  color: var(--accent-contrast);
+  object-fit: cover;
   box-shadow: var(--shadow-sm);
-}
-
-.brand-mark .icon {
-  width: 21px;
-  height: 21px;
 }
 
 .brand-copy {
@@ -175,12 +168,14 @@ body {
 }
 
 .popup-footer {
-  display: flex;
-  justify-content: space-between;
   padding-top: 10px;
   border-top: 1px solid var(--border);
+}
+
+.popup-disclaimer {
   color: var(--faint);
   font-size: 11px;
+  line-height: 1.45;
 }
 
 @media (prefers-reduced-motion: reduce) {

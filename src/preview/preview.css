@@ -22,7 +22,8 @@ body {
   position: sticky;
   top: 0;
   z-index: 10;
-  display: flex;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 20px;
   padding: 18px 32px;
@@ -33,17 +34,25 @@ body {
 .brand {
   display: flex;
   align-items: center;
-  gap: 9px;
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 600;
-  white-space: nowrap;
 }
 
-.brand .icon {
-  width: 22px;
-  height: 22px;
-  color: var(--accent);
+.brand-logo {
+  display: block;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  box-shadow: var(--shadow-sm);
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+a.icon-button {
+  text-decoration: none;
 }
 
 .deck-heading {
@@ -243,6 +252,21 @@ body {
   border-bottom: 1px solid var(--border);
 }
 
+.slide-open {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: zoom-in;
+}
+
+.slide-open:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+
 .slide-thumb img {
   display: block;
   width: 100%;
@@ -356,19 +380,167 @@ body {
 }
 
 .footer {
-  padding-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 16px;
   border-top: 1px solid var(--border);
 }
 
-.footer-note {
+.footer-title {
   color: var(--faint);
+  font-size: 11px;
+  font-weight: 650;
+  text-transform: uppercase;
+}
+
+.footer-text,
+.footer-list {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.footer-list {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.footer-list li + li {
+  margin-top: 2px;
+}
+
+body.has-lightbox {
+  overflow: hidden;
+}
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 12px;
+  padding: 20px;
+  background: rgb(0 0 0 / 0.94);
+}
+
+.lightbox-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 0;
+}
+
+.lightbox-image {
+  width: auto;
+  height: auto;
+  max-width: min(1200px, 92vw);
+  max-height: calc(100dvh - 150px);
+  border-radius: var(--radius-lg);
+  background: #000;
+  box-shadow: var(--shadow-lg);
+  outline: 1px solid rgb(255 255 255 / 0.15);
+  outline-offset: -1px;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.lightbox-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.lightbox-prev {
+  left: 0;
+}
+
+.lightbox-next {
+  right: 0;
+}
+
+.lightbox-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgb(255 255 255 / 0.25);
+  border-radius: 999px;
+  background: rgb(0 0 0 / 0.45);
+  color: #fff;
+  cursor: pointer;
+  z-index: 1;
+  transition-property: background-color, transform;
+  transition-duration: 150ms;
+  transition-timing-function: ease-out;
+}
+
+.lightbox-button .icon {
+  width: 20px;
+  height: 20px;
+}
+
+@media (hover: hover) {
+  .lightbox-button:hover {
+    background: rgb(255 255 255 / 0.15);
+  }
+}
+
+.lightbox-button:active {
+  transform: scale(0.96);
+}
+
+.lightbox-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  color: #fff;
+}
+
+.lightbox-meta {
+  min-width: 0;
+}
+
+.lightbox-filename {
+  font-size: 14px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.lightbox-counter {
+  color: rgb(255 255 255 / 0.65);
   font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.lightbox-warning {
+  color: var(--warning);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.lightbox-download {
+  flex: 0 0 auto;
+}
+
+.lightbox :focus-visible {
+  outline-color: #fff;
 }
 
 @media (max-width: 720px) {
   .topbar {
-    align-items: flex-start;
-    flex-direction: column;
+    align-items: start;
+    grid-template-columns: auto minmax(0, 1fr) auto;
     gap: 12px;
     padding: 16px 18px;
   }
@@ -384,15 +556,35 @@ body {
   .grid {
     grid-template-columns: 1fr;
   }
+
+  .lightbox {
+    padding: 12px;
+  }
+
+  .lightbox-image {
+    max-height: calc(100dvh - 160px);
+  }
+
+  .lightbox-nav {
+    top: auto;
+    bottom: 0;
+    transform: none;
+  }
+
+  .lightbox-bar {
+    flex-wrap: wrap;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .button,
-  .icon-button {
+  .icon-button,
+  .lightbox-button {
     transition: none;
   }
 
-  .button:not(:disabled):active {
+  .button:not(:disabled):active,
+  .lightbox-button:active {
     transform: none;
   }
 }

@@ -37,7 +37,7 @@ function model(overrides: Partial<PreviewModel> = {}): PreviewModel {
     slides: [
       {
         index: 1,
-        filename: "Slide_001.png",
+        filename: "slide_001.png",
         downloadUrl: "blob:one",
         width: 1920,
         height: 1080,
@@ -45,7 +45,7 @@ function model(overrides: Partial<PreviewModel> = {}): PreviewModel {
       },
       {
         index: 2,
-        filename: "Slide_002.png",
+        filename: "slide_002.png",
         downloadUrl: "blob:two",
         width: 1920,
         height: 1080,
@@ -61,6 +61,7 @@ function handlers() {
     onDownloadAll: vi.fn(),
     onDownloadAllAndMerge: vi.fn(),
     onDownloadSlide: vi.fn(),
+    onOpenSlide: vi.fn(),
     onClose: vi.fn(),
   };
 }
@@ -83,6 +84,57 @@ describe("renderPreview", () => {
     ).toBeTruthy();
   });
 
+  it("opens a slide from its thumbnail", () => {
+    const root = document.getElementById("app") as HTMLElement;
+    const callbacks = handlers();
+    renderPreview(root, model(), callbacks);
+
+    root
+      .querySelector<HTMLButtonElement>(
+        'button[aria-label="Open Slide 1 preview"]',
+      )
+      ?.click();
+
+    expect(callbacks.onOpenSlide).toHaveBeenCalledWith(
+      expect.objectContaining({ index: 1, filename: "slide_001.png" }),
+    );
+  });
+
+  it("links the header report button to the GitHub issue template", () => {
+    const root = document.getElementById("app") as HTMLElement;
+    renderPreview(root, model(), handlers());
+
+    const report = root.querySelector<HTMLAnchorElement>(
+      'a[aria-label="Report an issue"]',
+    );
+    expect(report?.getAttribute("href")).toContain(
+      "github.com/Wakype/Google-Slide-Downloader/issues/new",
+    );
+    expect(report?.getAttribute("href")).toContain("template=bug_report.yml");
+    expect(report?.getAttribute("target")).toBe("_blank");
+  });
+
+  it("shows only the enlarged extension logo in the header", () => {
+    const root = document.getElementById("app") as HTMLElement;
+    renderPreview(root, model(), handlers());
+
+    const logo = root.querySelector<HTMLImageElement>(".brand-logo");
+    expect(logo?.getAttribute("src")).toContain("icons/icon128.png");
+    expect(logo?.getAttribute("width")).toBe("40");
+    expect(root.querySelector(".brand-name")).toBeNull();
+  });
+
+  it("replaces the footer note with the README disclaimer", () => {
+    const root = document.getElementById("app") as HTMLElement;
+    renderPreview(root, model(), handlers());
+
+    expect(root.querySelector(".footer")?.textContent).toContain(
+      "educational, personal archival",
+    );
+    expect(root.textContent).toContain("Respect copyright");
+    expect(root.textContent).not.toContain("PNG capture · PDF24 merge");
+  });
+
   it("wires the bulk actions and per-slide downloads", () => {
     const root = document.getElementById("app") as HTMLElement;
     const callbacks = handlers();
@@ -97,7 +149,7 @@ describe("renderPreview", () => {
     expect(callbacks.onDownloadAll).toHaveBeenCalledTimes(1);
     expect(callbacks.onDownloadAllAndMerge).toHaveBeenCalledTimes(1);
     expect(callbacks.onDownloadSlide).toHaveBeenCalledWith(
-      expect.objectContaining({ index: 1, filename: "Slide_001.png" }),
+      expect.objectContaining({ index: 1, filename: "slide_001.png" }),
     );
   });
 

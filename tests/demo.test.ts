@@ -9,12 +9,12 @@ describe("createDemoCapture", () => {
     expect(session.title).toContain("Demo");
     expect(slides).toHaveLength(6);
     expect(slides.map((slide) => slide.filename)).toEqual([
-      "Slide_001.png",
-      "Slide_002.png",
-      "Slide_003.png",
-      "Slide_004.png",
-      "Slide_005.png",
-      "Slide_006.png",
+      "slide_001.png",
+      "slide_002.png",
+      "slide_003.png",
+      "slide_004.png",
+      "slide_005.png",
+      "slide_006.png",
     ]);
 
     for (const slide of slides) {

@@ -24,7 +24,7 @@ const slides: SlideRecord[] = [
     id: "session-1:1",
     sessionId: "session-1",
     index: 1,
-    filename: "Slide_001.png",
+    filename: "slide_001.png",
     blob: new Blob(["one"], { type: "image/png" }),
     width: 1920,
     height: 1080,
@@ -34,7 +34,7 @@ const slides: SlideRecord[] = [
     id: "session-1:2",
     sessionId: "session-1",
     index: 2,
-    filename: "Slide_002.png",
+    filename: "slide_002.png",
     blob: new Blob(["two"], { type: "image/png" }),
     width: 1920,
     height: 1080,
@@ -63,7 +63,7 @@ describe("buildPreviewModel", () => {
     expect(model.degradedCount).toBe(0);
     expect(model.slides[0]).toMatchObject({
       index: 1,
-      filename: "Slide_001.png",
+      filename: "slide_001.png",
       downloadUrl: "blob:one",
     });
   });

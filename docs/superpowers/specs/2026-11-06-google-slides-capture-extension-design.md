@@ -146,7 +146,7 @@ interface SlideRecord {
   id: string;          // `${sessionId}:${index}`
   sessionId: string;
   index: number;       // 1-based
-  filename: string;    // Slide_001.png
+  filename: string;    // slide_001.png
   blob: Blob;          // PNG
   width: number;
   height: number;
@@ -186,18 +186,23 @@ All timing values are constants so they can be tuned after testing against a liv
 - Primary button: **Start Capture** with a slide icon.
 - Helper line: keep the presentation tab visible; capture takes about a second per slide.
 - Inline error next to the button when start fails.
-- A restrained footer: "PNG capture · PDF24 merge".
+- A footer with the README disclaimer.
 
 ### Preview tab
 
-- Top bar: product mark, deck title, source host, captured time.
+- Top bar: the extension logo only (no wordmark), deck title, source host, captured time,
+  and a report button linking to the GitHub bug-report template.
 - Summary row: slide count, failed count, capture status.
 - Actions: **Download all**, **Download all + Merge PDF**, and a note that PDF24 opens
   after downloads start.
-- Responsive grid of 16:9 cards. Each card shows the thumbnail, `Slide_001.png`,
+- Responsive grid of 16:9 cards. Each card shows the thumbnail, `slide_001.png`,
   dimensions, and a download icon button with an accessible label.
+- Clicking a thumbnail opens a modal lightbox with the full-size image, previous/next
+  buttons, Left/Right/Escape keyboard support, a slide counter, a download button, and a
+  focus return to the thumbnail on close.
 - Empty state when no slides were captured, with a clear next action.
 - Partial/error state shows failed slide numbers without hiding successful slides.
+- A footer repeating the README disclaimer.
 - A `?demo=1` mode renders six generated SVG slides for visual QA without Chrome APIs.
 
 ### Visual system
