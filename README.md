@@ -64,18 +64,19 @@ For development, `npm run watch` rebuilds on changes. Reload the extension from
    Left/Right keys to move between slides, Escape to close, and **Download** in the
    lightbox to save the visible slide.
 
-PDF24 opens after the downloads start. A browser cannot attach local files to another
-site, so add the downloaded PNGs in PDF24 and merge them there. PDF24 accepts PNG and JPG
-images directly.
+PDF24 opens in a new tab and the downloads start immediately. A browser cannot attach
+local files to another site, so add the downloaded PNGs in PDF24 and merge them there.
+PDF24 accepts PNG and JPG images directly.
 
 A partial capture stops after the requested number of slides. The preview still shows the
 deck's detected total and a **Partial capture** banner, for example “first 5 of 43 slides”.
 
-Files are named `slide_001.png`, `slide_002.png`, and so on, inside a per-deck folder
-under `Downloads/Slides/`.
+Files are saved as `slide_001.png`, `slide_002.png`, and so on in your default Downloads
+folder.
 
-Use the download icon or the lightbox **Download** button to get that filename. Using the
-browser's context menu on a preview image saves the underlying blob URL, which Chrome names
+Use the download icon or the lightbox **Download** button to get that filename. Chrome may
+ask once to allow multiple downloads when you use **Download all**. Using the browser's
+context menu on a preview image still saves the underlying blob URL, which Chrome names
 with a UUID instead.
 
 ## How it works
@@ -92,7 +93,7 @@ popup ──START_CAPTURE──▶ background service worker
                            ├── one PNG per message ──▶ IndexedDB
                            └── complete ──▶ preview tab
                                                │ reads IndexedDB
-                                               │ chrome.downloads
+                                               │ anchor downloads
                                                └ opens PDF24
 ```
 
@@ -101,7 +102,8 @@ popup ──START_CAPTURE──▶ background service worker
   converts it to a Blob and stores it in IndexedDB.
 - The preview opens only after the capture ends, so it does not background the presentation
   tab during the run.
-- Downloads use `chrome.downloads`, avoiding Chrome's page-level multiple-download prompt.
+- Downloads use an anchor with the exact `slide_NNN.png` filename, so names are stable and
+  sortable. Chrome may ask once to allow multiple downloads for **Download all**.
 
 ## Permissions
 
@@ -109,7 +111,6 @@ popup ──START_CAPTURE──▶ background service worker
 | --- | --- |
 | `tabs` | Read the active tab, focus it, and open the preview. |
 | `scripting` | Inject the content script into tabs that were open before the extension loaded. |
-| `downloads` | Save PNGs without the multiple-file prompt. |
 | `storage` | Track the active capture per tab in `chrome.storage.session`. |
 | `https://docs.google.com/presentation/*` | Run the capture content script. |
 | `https://docs.google.com/slides-images-rt/*` | Fetch embedded slide images in the worker so they can be inlined before rasterization. |
@@ -167,7 +168,7 @@ docs/superpowers/          design and implementation plan
 | **Capture stalls or skips slides** | The presentation tab was backgrounded or the viewer changed. | Keep the tab visible, reload, and try again. |
 | **Only some slides appear** | One or more slides failed to rasterize, or the deck ended early. | The preview lists failed slide numbers. Re-run the capture. |
 | **Some slides say "Missing images"** | The worker could not fetch an embedded slide image, so that image was removed and the slide was still captured. | Reload the presentation and retry; check the extension's service-worker console for the asset URL. |
-| **PDF24 has no files** | The browser cannot pre-fill a third-party upload. | Drag the downloaded PNGs from `Downloads/Slides/` into PDF24. |
+| **PDF24 has no files** | The browser cannot pre-fill a third-party upload. | Drag the downloaded PNGs from your Downloads folder into PDF24. |
 | **Content script does not respond** | The tab was open before the extension was installed or reloaded. | Reload the presentation tab, or retry; the worker injects the script automatically. |
 
 ## Reporting an issue

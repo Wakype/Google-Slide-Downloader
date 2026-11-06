@@ -60,7 +60,7 @@ storage, and delivery into proper extension surfaces.
 - The service worker fetches no remote code. The only requests are for slide image
   assets already referenced by the page.
 - Chrome does not allow a page to populate a file input on another origin. PDF24 opens
-  after the downloads start and the user adds the files there.
+  in a new tab and the user adds the files there.
 
 ## Approaches considered
 
@@ -101,7 +101,7 @@ popup.html/ts ──START_CAPTURE──▶ background.ts
                                                              ▼
                                                     preview.html/ts
                                                              │ reads IndexedDB
-                                                             │ chrome.downloads
+                                                             │ anchor downloads
                                                              └ opens PDF24 merge
 ```
 
@@ -114,7 +114,8 @@ popup.html/ts ──START_CAPTURE──▶ background.ts
 - **Content script**: runs the capture loop against the viewer DOM. It is the only code
   that knows Google Slides selectors. It sends one message per slide and awaits the ack.
 - **Preview page**: reads the session from IndexedDB, renders a responsive thumbnail grid,
-  downloads individual or all slides with `chrome.downloads`, and opens PDF24.
+  downloads individual or all slides with anchor downloads that carry the exact filename,
+  and opens PDF24.
 - **Shared modules**: message types, data types, constants, IndexedDB store, URL and
   filename utilities, and the capture engine.
 
@@ -200,7 +201,8 @@ All timing values are constants so they can be tuned after testing against a liv
 - Actions: **Download all**, **Download all + Merge PDF**, and a note that PDF24 opens
   after downloads start.
 - Responsive grid of 16:9 cards. Each card shows the thumbnail, `slide_001.png`,
-  dimensions, and a download icon button with an accessible label.
+  dimensions, and a download icon button with an accessible label. Downloads use an
+  anchor with the exact filename (Chrome may prompt once for multiple downloads).
 - Clicking a thumbnail opens a modal lightbox with the full-size image, previous/next
   buttons, Left/Right/Escape keyboard support, a slide counter, a download button, and a
   focus return to the thumbnail on close.
@@ -224,7 +226,6 @@ All timing values are constants so they can be tuned after testing against a liv
 
 - `tabs` — query the active tab, focus it, read title/URL, open preview.
 - `scripting` — inject the content script into tabs that were open before the extension.
-- `downloads` — save PNGs without the page-level multiple-download prompt.
 - `storage` — `chrome.storage.session` for in-flight capture ownership.
 - Host permission `https://docs.google.com/presentation/*` — content script and injection.
 - Host permission `https://docs.google.com/slides-images-rt/*` and

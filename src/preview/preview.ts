@@ -21,9 +21,19 @@ const root: HTMLElement = appRoot;
 
 function createDownloadDeps(): DownloadDeps {
   return {
-    download: (options) => chrome.downloads.download(options),
+    save: (url, filename) => {
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = filename;
+      anchor.rel = "noopener";
+      document.body.append(anchor);
+      anchor.click();
+      anchor.remove();
+    },
     sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
-    openTab: (url) => chrome.tabs.create({ url }),
+    openTab: (url) => {
+      window.open(url, "_blank", "noopener");
+    },
   };
 }
 
@@ -42,7 +52,7 @@ function runDownload(
   setPreviewStatus(
     root,
     action === "merge"
-      ? "Starting downloads, then opening PDF24…"
+      ? "Opening PDF24 and starting downloads…"
       : "Starting downloads…",
     "info",
   );
@@ -50,17 +60,17 @@ function runDownload(
   const deps = createDownloadDeps();
   const task =
     action === "one" && slide
-      ? downloadSlide(slide, model.downloadFolder, deps)
+      ? downloadSlide(slide, deps)
       : action === "merge"
-        ? downloadAllAndMerge(model.slides, model.downloadFolder, deps)
-        : downloadAll(model.slides, model.downloadFolder, deps);
+        ? downloadAllAndMerge(model.slides, deps)
+        : downloadAll(model.slides, deps);
 
   void task
     .then(() => {
       setPreviewStatus(
         root,
         action === "merge"
-          ? "Downloads started. Add the PNGs in PDF24."
+          ? "PDF24 opened. Downloads started."
           : "Downloads started.",
         "success",
       );

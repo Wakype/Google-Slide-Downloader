@@ -59,7 +59,6 @@ describe("buildPreviewModel", () => {
     expect(model.total).toBe(2);
     expect(model.captured).toBe(2);
     expect(model.isEmpty).toBe(false);
-    expect(model.downloadFolder).toBe("Slides/My Deck");
     expect(model.reachedEnd).toBe(true);
     expect(model.degradedCount).toBe(0);
     expect(model.slides[0]).toMatchObject({
