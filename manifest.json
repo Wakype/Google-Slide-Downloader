@@ -1,0 +1,37 @@
+{
+  "manifest_version": 3,
+  "name": "Slides Capture",
+  "version": "1.0.0",
+  "description": "Capture published Google Slides as high-resolution PNGs and merge them into a PDF.",
+  "minimum_chrome_version": "116",
+  "permissions": ["tabs", "scripting", "downloads", "storage"],
+  "host_permissions": ["https://docs.google.com/presentation/*"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "Slides Capture",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://docs.google.com/presentation/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ]
+}
