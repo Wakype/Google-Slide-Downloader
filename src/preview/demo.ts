@@ -40,6 +40,7 @@ export function createDemoCapture(now: number = Date.now()): {
     title: "Demo deck — product launch",
     createdAt: now,
     total: 6,
+    limit: null,
     captured: 6,
     failed: [],
     status: "complete",

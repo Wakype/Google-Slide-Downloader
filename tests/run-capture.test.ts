@@ -56,6 +56,48 @@ describe("runCapture", () => {
     });
   });
 
+  it("captures only the requested number of slides but reports the deck total", async () => {
+    document.body.innerHTML = `<div aria-setsize="5"></div>`;
+    const capture = vi.fn((index: number) => Promise.resolve(okResult(index)));
+    const onProgress = vi.fn();
+
+    const summary = await runCapture({
+      document,
+      sleep: immediateSleep,
+      capture,
+      advance: () => Promise.resolve(true),
+      onSlide: () => Promise.resolve(),
+      onProgress,
+      limit: 2,
+      settleMs: 0,
+    });
+
+    expect(capture).toHaveBeenCalledTimes(2);
+    expect(summary.total).toBe(5);
+    expect(summary.captured).toBe(2);
+    expect(summary.reachedEnd).toBe(false);
+    expect(
+      onProgress.mock.calls.every(([progress]) => progress.total === 2),
+    ).toBe(true);
+  });
+
+  it("captures the whole deck when the requested limit exceeds it", async () => {
+    document.body.innerHTML = `<div aria-setsize="3"></div>`;
+    const summary = await runCapture({
+      document,
+      sleep: immediateSleep,
+      capture: (index: number) => Promise.resolve(okResult(index)),
+      advance: () => Promise.resolve(true),
+      onSlide: () => Promise.resolve(),
+      onProgress: () => undefined,
+      limit: 10,
+      settleMs: 0,
+    });
+
+    expect(summary.total).toBe(3);
+    expect(summary.captured).toBe(3);
+  });
+
   it("records a failed slide and continues", async () => {
     const capture = vi.fn((index: number) =>
       Promise.resolve(index === 2 ? failedResult : okResult(index)),

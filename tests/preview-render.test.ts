@@ -32,6 +32,7 @@ function model(overrides: Partial<PreviewModel> = {}): PreviewModel {
     isDemo: false,
     missing: false,
     reachedEnd: false,
+    limit: null,
     degradedCount: 0,
     downloadFolder: "Slides/My deck",
     slides: [
@@ -162,6 +163,14 @@ describe("renderPreview", () => {
     );
 
     expect(root.textContent).toContain("Slides 2, 4");
+  });
+
+  it("shows the requested limit for a partial capture", () => {
+    const root = document.getElementById("app") as HTMLElement;
+    renderPreview(root, model({ total: 5, limit: 2 }), handlers());
+
+    expect(root.textContent).toContain("Partial capture");
+    expect(root.textContent).toContain("first 2 of 5");
   });
 
   it("warns when the viewer stopped before the end of the deck", () => {

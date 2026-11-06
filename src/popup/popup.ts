@@ -1,5 +1,8 @@
 import { createIcon } from "../shared/icons";
-import type { StartCaptureResponse } from "../shared/messages";
+import type {
+  StartCaptureMessage,
+  StartCaptureResponse,
+} from "../shared/messages";
 import { isSlidesPresentationUrl, toErrorMessage } from "../shared/utils";
 
 export type PopupPhase =
@@ -14,6 +17,7 @@ export interface PopupState {
   title: string | null;
   error: string | null;
   supported: boolean;
+  limit: number | null;
 }
 
 export interface PopupTab {
@@ -23,13 +27,13 @@ export interface PopupTab {
 
 export interface PopupEnvironment {
   queryActiveTab(): Promise<PopupTab | undefined>;
-  sendStart(): Promise<StartCaptureResponse>;
+  sendStart(limit: number | null): Promise<StartCaptureResponse>;
   close(): void;
 }
 
 export interface PopupController {
   init(): Promise<void>;
-  start(): Promise<void>;
+  start(limit?: number | null): Promise<void>;
   showDemo(): void;
 }
 
@@ -77,7 +81,7 @@ function statusDetail(state: PopupState): string {
 export function renderPopup(
   root: HTMLElement,
   state: PopupState,
-  onStart: () => void,
+  onStart: (limit: number | null) => void,
 ): void {
   root.replaceChildren();
 
@@ -104,6 +108,56 @@ export function renderPopup(
   );
   status.append(element("span", "status-dot"), statusCopy);
 
+  const options = element("fieldset", "capture-options");
+  options.append(element("legend", "options-legend", "Slides to capture"));
+
+  const allRow = element("div", "option-row");
+  const allLabel = element("label", "option-label");
+  const allRadio = element("input", "option-radio");
+  allRadio.type = "radio";
+  allRadio.name = "capture-mode";
+  allRadio.value = "all";
+  allRadio.checked = state.limit === null;
+  allLabel.append(allRadio, element("span", "option-text", "All slides"));
+  allRow.append(allLabel);
+
+  const someRow = element("div", "option-row option-row-count");
+  const someLabel = element("label", "option-label");
+  const someRadio = element("input", "option-radio");
+  someRadio.type = "radio";
+  someRadio.name = "capture-mode";
+  someRadio.value = "some";
+  someRadio.checked = state.limit !== null;
+  someLabel.append(someRadio, element("span", "option-text", "Some slides"));
+  const countInput = element("input", "count-input");
+  countInput.type = "number";
+  countInput.min = "1";
+  countInput.max = "500";
+  countInput.step = "1";
+  countInput.value = String(state.limit ?? 5);
+  countInput.disabled = state.limit === null;
+  countInput.setAttribute("aria-label", "Number of slides to capture");
+  someRow.append(someLabel, countInput);
+
+  const syncCount = () => {
+    countInput.disabled = !someRadio.checked;
+    if (someRadio.checked) countInput.focus();
+  };
+  allRadio.addEventListener("change", syncCount);
+  someRadio.addEventListener("change", syncCount);
+
+  options.append(allRow, someRow);
+
+  const readLimit = (): number | null => {
+    if (!someRadio.checked) return null;
+    const parsed = Number.parseInt(countInput.value, 10);
+    const clamped = Number.isFinite(parsed)
+      ? Math.min(500, Math.max(1, parsed))
+      : 1;
+    countInput.value = String(clamped);
+    return clamped;
+  };
+
   const errorBox = element("div", "popup-error");
   errorBox.setAttribute("role", "alert");
   errorBox.append(
@@ -129,7 +183,7 @@ export function renderPopup(
       state.phase === "starting" ? "Starting…" : "Start Capture",
     ),
   );
-  startButton.addEventListener("click", onStart);
+  startButton.addEventListener("click", () => onStart(readLimit()));
 
   const hint = element(
     "p",
@@ -145,7 +199,7 @@ export function renderPopup(
     ),
   );
 
-  popup.append(header, status);
+  popup.append(header, status, options);
   if (state.phase === "error") popup.append(errorBox);
   popup.append(startButton, hint, footer);
   root.append(popup);
@@ -160,11 +214,12 @@ export function createPopupController(
     title: null,
     error: null,
     supported: false,
+    limit: null,
   };
 
   function draw(): void {
-    renderPopup(root, state, () => {
-      void start();
+    renderPopup(root, state, (limit) => {
+      void start(limit);
     });
   }
 
@@ -178,6 +233,7 @@ export function createPopupController(
           title: tab.title?.trim() || "Google Slides",
           error: null,
           supported: true,
+          limit: state.limit,
         };
       } else {
         state = {
@@ -185,6 +241,7 @@ export function createPopupController(
           title: tab?.title?.trim() || null,
           error: null,
           supported: false,
+          limit: state.limit,
         };
       }
     } catch (error) {
@@ -193,19 +250,20 @@ export function createPopupController(
         title: null,
         error: toErrorMessage(error),
         supported: false,
+        limit: state.limit,
       };
     }
     draw();
   }
 
-  async function start(): Promise<void> {
+  async function start(limit: number | null = null): Promise<void> {
     if (state.phase !== "ready" || !state.supported) return;
 
-    state = { ...state, phase: "starting", error: null };
+    state = { ...state, phase: "starting", limit, error: null };
     draw();
 
     try {
-      const response = await environment.sendStart();
+      const response = await environment.sendStart(limit);
       if (response.ok) {
         environment.close();
         return;
@@ -215,6 +273,7 @@ export function createPopupController(
         title: state.title,
         error: response.error,
         supported: true,
+        limit,
       };
     } catch (error) {
       state = {
@@ -222,6 +281,7 @@ export function createPopupController(
         title: state.title,
         error: toErrorMessage(error),
         supported: true,
+        limit,
       };
     }
     draw();
@@ -233,6 +293,7 @@ export function createPopupController(
       title: "Demo deck — product launch",
       error: null,
       supported: true,
+      limit: null,
     };
     draw();
   }
@@ -266,10 +327,12 @@ if (popupRoot) {
           });
           return tab ? { url: tab.url, title: tab.title } : undefined;
         },
-        sendStart: async () => {
-          const response = await chrome.runtime.sendMessage({
+        sendStart: async (limit) => {
+          const message: StartCaptureMessage = {
             type: "START_CAPTURE",
-          });
+            limit,
+          };
+          const response = await chrome.runtime.sendMessage(message);
           return isStartCaptureResponse(response)
             ? response
             : {

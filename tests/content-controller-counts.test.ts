@@ -9,6 +9,7 @@ const runMessage = {
   sessionId: "session-1",
   sourceUrl: "https://docs.google.com/presentation/d/e/abc/pub",
   title: "Deck",
+  limit: null,
 };
 
 const summary: CaptureSummary = {

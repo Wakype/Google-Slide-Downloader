@@ -16,6 +16,7 @@ function session(id: string): CaptureSession {
     title: "Test deck",
     createdAt: 1_000,
     total: 2,
+    limit: null,
     captured: 0,
     failed: [],
     status: "capturing",

@@ -214,6 +214,15 @@ export function renderPreview(
   if (model.status === "error" && model.error && !model.missing) {
     main.append(banner("error", "Capture stopped", model.error));
   }
+  if (model.limit !== null && model.total > model.limit) {
+    main.append(
+      banner(
+        "warning",
+        "Partial capture",
+        `You requested the first ${model.limit} of ${model.total} slides.`,
+      ),
+    );
+  }
   if (model.reachedEnd) {
     main.append(
       banner(

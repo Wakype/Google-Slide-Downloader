@@ -1,5 +1,6 @@
 export interface StartCaptureMessage {
   type: "START_CAPTURE";
+  limit: number | null;
 }
 
 export interface RunCaptureMessage {
@@ -7,6 +8,7 @@ export interface RunCaptureMessage {
   sessionId: string;
   sourceUrl: string;
   title: string;
+  limit: number | null;
 }
 
 export interface PingMessage {
