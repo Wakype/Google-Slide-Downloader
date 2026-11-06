@@ -162,8 +162,10 @@ The preview page opens the same database from the extension origin.
    `MAX_SLIDES` (500).
 2. For each slide index:
    - Snapshot the viewer signature (caption + SVG text/hash) before advancing.
-   - Clone the current SVG, inline every non-data `<image>` as a data URL, serialize,
-     draw to a canvas at native width/height, and export PNG.
+   - Clone the current SVG, ask the worker to fetch every non-data `<image>` and return a
+     data URL, serialize, draw to a canvas at native width/height, and export PNG. If an
+     asset fetch fails, remove that `<image>` from the clone so the slide still rasterizes
+     and record a missing-image warning.
    - Send the data URL to the worker. Continue even if one slide fails; record its index.
    - If this was the last expected slide, stop.
    - Advance with the existing three-strategy ladder: overlay pointer sequence, document
@@ -216,6 +218,9 @@ All timing values are constants so they can be tuned after testing against a liv
 - `downloads` — save PNGs without the page-level multiple-download prompt.
 - `storage` — `chrome.storage.session` for in-flight capture ownership.
 - Host permission `https://docs.google.com/presentation/*` — content script and injection.
+- Host permission `https://docs.google.com/slides-images-rt/*` and
+  `https://*.googleusercontent.com/*` — the worker fetches embedded slide assets so they
+  can be inlined as data URLs before rasterization.
 - No `activeTab`, no `<all_urls>`, no remote code.
 
 ## Error handling
@@ -233,9 +238,11 @@ All timing values are constants so they can be tuned after testing against a liv
 
 ## Security and privacy
 
-- The extension only runs on `docs.google.com/presentation/*`.
+- The content script only runs on `docs.google.com/presentation/*`.
+- The worker may fetch slide image assets from the URLs already present in the page's
+  SVG (`docs.google.com/slides-images-rt/*` and `googleusercontent.com`).
 - No analytics, no external API calls, no remote code.
-- Slide assets are fetched from URLs already present in the page's SVG.
+- Slide assets are fetched only from URLs already present in the page's SVG.
 - PDF24 is opened only after an explicit button click; the extension sends no files.
 - Session data stays in the extension's IndexedDB. The user can clear it by clearing
   extension data or deleting the extension.

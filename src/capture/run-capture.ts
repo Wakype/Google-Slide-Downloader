@@ -81,6 +81,9 @@ export async function runCapture(
       }
     } else {
       failed.push(index);
+      console.warn(
+        `[Slides Capture] Slide ${index} failed: ${result.reason ?? "unknown"}`,
+      );
     }
 
     await options.onProgress({

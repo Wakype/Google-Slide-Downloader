@@ -1,5 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { captureSlide } from "../src/capture/capture-slide";
+import {
+  captureSlide,
+  getSvgDimensions,
+} from "../src/capture/capture-slide";
 
 const XLINK = "http://www.w3.org/1999/xlink";
 
@@ -17,6 +20,39 @@ function setupSvg(): SVGSVGElement {
 
 beforeEach(() => {
   document.body.innerHTML = "";
+});
+
+describe("getSvgDimensions", () => {
+  it("falls back to the viewBox when width and height are relative", () => {
+    const svg = {
+      viewBox: { baseVal: { width: 960, height: 540 } },
+      width: {
+        baseVal: {
+          get value(): number {
+            throw new Error("Could not resolve relative length.");
+          },
+        },
+      },
+      height: {
+        baseVal: {
+          get value(): number {
+            throw new Error("Could not resolve relative length.");
+          },
+        },
+      },
+    } as unknown as SVGSVGElement;
+
+    expect(getSvgDimensions(svg)).toEqual({ width: 960, height: 540 });
+  });
+
+  it("prefers explicit width and height", () => {
+    const svg = {
+      viewBox: { baseVal: { width: 400, height: 300 } },
+      width: { baseVal: { value: 800 } },
+      height: { baseVal: { value: 600 } },
+    } as unknown as SVGSVGElement;
+    expect(getSvgDimensions(svg)).toEqual({ width: 800, height: 600 });
+  });
 });
 
 describe("captureSlide", () => {
@@ -58,15 +94,19 @@ describe("captureSlide", () => {
   it("warns when an embedded image cannot be inlined", async () => {
     setupSvg();
     const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const rasterize = vi.fn(async (svg: SVGSVGElement) => {
+      expect(svg.querySelector("image")).toBeNull();
+      return {
+        dataUrl: "data:image/png;base64,OUT",
+        width: 800,
+        height: 600,
+      };
+    });
     const result = await captureSlide(document, {
       fetchImageAsDataUrl: vi
         .fn()
         .mockRejectedValue(new Error("blocked by CORS")),
-      rasterize: vi.fn(async () => ({
-        dataUrl: "data:image/png;base64,OUT",
-        width: 800,
-        height: 600,
-      })),
+      rasterize,
     });
 
     expect(result.ok).toBe(true);
