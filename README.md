@@ -7,6 +7,20 @@ away.
 The original DevTools console script is still included as `downloadAsPNG.js` for legacy
 use, but the extension is the recommended workflow.
 
+## Install from GitHub Releases
+
+Chrome Web Store registration is not required. Download the prebuilt extension from the
+latest GitHub release:
+
+1. Open [Releases](https://github.com/Wakype/Google-Slide-Downloader/releases/latest).
+2. Download `slides-capture-<version>.zip` from **Assets**.
+3. Extract the ZIP to a permanent folder.
+4. Open `chrome://extensions`, enable **Developer mode**, and click **Load unpacked**.
+5. Select the extracted folder and pin **Slides Capture** to the toolbar.
+
+The release build is unsigned. Chrome may show its standard developer-mode extension
+warning; load unpacked is the supported install path outside the Chrome Web Store.
+
 ## Features
 
 - One-click capture from the toolbar popup.
@@ -30,7 +44,7 @@ use, but the extension is the recommended workflow.
 - A Google Slides presentation published with **File → Share → Publish to web**
   (`/pub`, `/pubembed`, `/embed`, or `/preview`), or opened in the presentation viewer (`/present`).
 
-## Build and load
+## Build and load (development)
 
 ```bash
 npm install
@@ -147,17 +161,21 @@ Then open:
 
 The demo preview renders six generated slides and disables downloads.
 
-## Publishing
+## Release packaging
 
-The Chrome Web Store package is built with:
+GitHub Releases is the primary distribution:
 
 ```bash
+npm run check
 npm run package
 ```
 
-It writes `release/slides-capture-<version>.zip` at the ZIP root and omits source maps.
-See `docs/CHROME_WEB_STORE.md` for the store listing, privacy-practices, screenshot, and
-review steps. The privacy policy is `PRIVACY.md`.
+`npm run package` writes `release/slides-capture-<version>.zip` with `manifest.json` at the
+ZIP root and omits source maps. Then create a GitHub release with the ZIP as an asset; see
+`docs/GITHUB_RELEASES.md` for the exact commands and install notes.
+
+The privacy policy is `PRIVACY.md`. `docs/CHROME_WEB_STORE.md` is kept as an optional guide;
+publishing there requires a paid Chrome Web Store developer registration.
 
 ## Project layout
 
