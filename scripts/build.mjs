@@ -7,10 +7,11 @@ import process from "node:process";
 const root = process.cwd();
 const dist = path.join(root, "dist");
 const isWatch = process.argv.includes("--watch");
+const noSourcemap = process.argv.includes("--no-sourcemap");
 
 const common = {
   bundle: true,
-  sourcemap: true,
+  sourcemap: !noSourcemap,
   minify: false,
   target: ["chrome116"],
   logLevel: "info",

@@ -6,7 +6,9 @@
   "description": "Capture published Google Slides as high-resolution PNGs and send them to PDF24.",
   "scripts": {
     "build": "node scripts/build.mjs",
+    "build:store": "node scripts/build.mjs --no-sourcemap",
     "watch": "node scripts/build.mjs --watch",
+    "package": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/package.ps1",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",

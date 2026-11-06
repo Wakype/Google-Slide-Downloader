@@ -20,6 +20,7 @@ export interface PreviewModel {
   sourceHost: string;
   capturedAt: string;
   total: number;
+  totalKnown: boolean;
   captured: number;
   failed: number[];
   status: CaptureStatus;
@@ -55,6 +56,7 @@ export function buildPreviewModel(
     capturedAt: formatCapturedAt(session.createdAt),
     total:
       session.total !== null && session.total > 0 ? session.total : traversed,
+    totalKnown: session.total !== null,
     captured: slides.length,
     failed: session.failed,
     status: session.status,
@@ -83,6 +85,7 @@ export function createMissingModel(): PreviewModel {
     sourceHost: "",
     capturedAt: "",
     total: 0,
+    totalKnown: false,
     captured: 0,
     failed: [],
     status: "error",

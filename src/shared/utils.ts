@@ -34,6 +34,27 @@ export function parseTotalSlides(doc: Document): number | null {
   return null;
 }
 
+export function getCurrentSlide(doc: Document): number | null {
+  const attribute = doc
+    .querySelector("[aria-posinset]")
+    ?.getAttribute("aria-posinset");
+  const fromAttribute = Number.parseInt(attribute ?? "", 10);
+  if (Number.isFinite(fromAttribute) && fromAttribute > 0) {
+    return fromAttribute;
+  }
+
+  const caption = doc.querySelector(
+    ".docs-material-menu-button-flat-default-caption",
+  )?.textContent;
+  const match = /^\s*(\d+)/.exec(caption ?? "");
+  const fromCaption = Number.parseInt(match?.[1] ?? "", 10);
+  if (Number.isFinite(fromCaption) && fromCaption > 0) {
+    return fromCaption;
+  }
+
+  return null;
+}
+
 function hashText(value: string): string {
   let hash = 0x811c9dc5;
   for (let index = 0; index < value.length; index += 1) {

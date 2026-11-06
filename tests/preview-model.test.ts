@@ -60,6 +60,7 @@ describe("buildPreviewModel", () => {
     expect(model.captured).toBe(2);
     expect(model.isEmpty).toBe(false);
     expect(model.reachedEnd).toBe(true);
+    expect(model.totalKnown).toBe(true);
     expect(model.degradedCount).toBe(0);
     expect(model.slides[0]).toMatchObject({
       index: 1,
@@ -110,6 +111,7 @@ describe("buildPreviewModel", () => {
       new Map([["session-1:1", "blob:one"]]),
     );
     expect(model.total).toBe(2);
+    expect(model.totalKnown).toBe(false);
   });
 
   it("preserves failed slide indexes", () => {

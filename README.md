@@ -12,6 +12,7 @@ use, but the extension is the recommended workflow.
 - One-click capture from the toolbar popup.
 - Choose **All slides** (default) or **Some slides** and enter how many slides to capture.
 - Captures `/pub`, `/pubembed`, `/present`, `/embed`, and `/preview` Google Slides viewers.
+- Returns the viewer to slide 1 before capturing, so `slide_001.png` matches the first slide.
 - Streams each slide to the extension worker as it is captured, so large decks do not
   sit in memory or in one giant message.
 - Progress on the toolbar badge (`12/40`), so the presentation tab can stay focused.
@@ -58,8 +59,9 @@ For development, `npm run watch` rebuilds on changes. Reload the extension from
 5. Use:
    - **Download all** to save every PNG.
    - The download icon on a card to save one slide.
-   - **Download all + Merge PDF** to save every PNG, then open
-     [PDF24 Merge PDF](https://tools.pdf24.org/en/merge-pdf) in a new tab.
+   - **Download all + Merge PDF** to open
+     [PDF24 Merge PDF](https://tools.pdf24.org/en/merge-pdf) in a new tab and start
+     saving every PNG.
 6. Click a slide thumbnail to open the full-size lightbox. Use the arrow buttons or
    Left/Right keys to move between slides, Escape to close, and **Download** in the
    lightbox to save the visible slide.
@@ -68,8 +70,10 @@ PDF24 opens in a new tab and the downloads start immediately. A browser cannot a
 local files to another site, so add the downloaded PNGs in PDF24 and merge them there.
 PDF24 accepts PNG and JPG images directly.
 
-A partial capture stops after the requested number of slides. The preview still shows the
-deck's detected total and a **Partial capture** banner, for example “first 5 of 43 slides”.
+A partial capture stops after the requested number of slides. When the deck total is
+detected, the preview shows it with a **Partial capture** banner, for example “first 5 of
+43 slides”. If the total cannot be detected, the preview shows the captured count and says
+so explicitly.
 
 Files are saved as `slide_001.png`, `slide_002.png`, and so on in your default Downloads
 folder.
@@ -143,6 +147,18 @@ Then open:
 
 The demo preview renders six generated slides and disables downloads.
 
+## Publishing
+
+The Chrome Web Store package is built with:
+
+```bash
+npm run package
+```
+
+It writes `release/slides-capture-<version>.zip` at the ZIP root and omits source maps.
+See `docs/CHROME_WEB_STORE.md` for the store listing, privacy-practices, screenshot, and
+review steps. The privacy policy is `PRIVACY.md`.
+
 ## Project layout
 
 ```text
@@ -167,7 +183,7 @@ docs/superpowers/          design and implementation plan
 | **Start Capture is disabled** | The active tab is not a supported Slides viewer. | Open a `/pub`, `/pubembed`, `/present`, `/embed`, or `/preview` URL. |
 | **Capture stalls or skips slides** | The presentation tab was backgrounded or the viewer changed. | Keep the tab visible, reload, and try again. |
 | **Only some slides appear** | One or more slides failed to rasterize, or the deck ended early. | The preview lists failed slide numbers. Re-run the capture. |
-| **Some slides say "Missing images"** | The worker could not fetch an embedded slide image, so that image was removed and the slide was still captured. | Reload the presentation and retry; check the extension's service-worker console for the asset URL. |
+| **Some slides say "Missing images"** | The worker could not fetch an embedded slide image, so that image was removed and the slide was still captured. | Reload the presentation and retry; check the presentation tab console for the skipped asset URL. |
 | **PDF24 has no files** | The browser cannot pre-fill a third-party upload. | Drag the downloaded PNGs from your Downloads folder into PDF24. |
 | **Content script does not respond** | The tab was open before the extension was installed or reloaded. | Reload the presentation tab, or retry; the worker injects the script automatically. |
 
@@ -182,7 +198,8 @@ reproduction steps, and console errors.
 
 `downloadAsPNG.js` still works when pasted into DevTools on a published presentation. It
 downloads each PNG through page `<a download>` links, so Chrome may ask for permission to
-download multiple files. The extension avoids that prompt and adds preview, progress, and
+download multiple files. The extension uses the same exact-filename download approach, so
+Chrome may still ask once to allow multiple downloads, but adds preview, progress, and
 PDF24 integration.
 
 ## Disclaimer

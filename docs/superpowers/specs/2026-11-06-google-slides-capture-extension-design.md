@@ -38,8 +38,9 @@ storage, and delivery into proper extension surfaces.
 
 ## Anti-goals
 
-- Never auto-download every PNG through page `<a download>` clicks, which triggers
-  Chrome's multiple-file download prompt.
+- Never download without an exact filename. Use anchor downloads with
+  `download="slide_NNN.png"`; Chrome may ask once to allow multiple downloads, and the UI
+  must say so rather than claiming the prompt is avoided.
 - Never open the preview tab during capture; that backgrounds the slides tab and
   throttles timers, canvas work, and slide transitions.
 - Never let one failed sub-image or one unreadable slide abort the whole deck.
@@ -164,7 +165,10 @@ The preview page opens the same database from the extension origin.
    text ("3 of 20"), else `null`. `null` means "walk until advancing fails", capped at
    `MAX_SLIDES` (500). If the popup requested a limit, the loop stops after that many
    slides even when the deck has more; the preview still reports the detected deck total.
-2. For each slide index:
+2. If the viewer is not already on slide 1, return to slide 1 with the Home key and then
+   the previous-slide control. If the position cannot be verified as 1, abort with a clear
+   error instead of capturing from the middle of the deck.
+3. For each slide index:
    - Snapshot the viewer signature (caption + SVG text/hash) before advancing.
    - Clone the current SVG, ask the worker to fetch every non-data `<image>` and return a
      data URL, serialize, draw to a canvas at native width/height, and export PNG. If an
@@ -175,9 +179,11 @@ The preview page opens the same database from the extension origin.
    - Advance with the existing three-strategy ladder: overlay pointer sequence, document
      ArrowRight, wheel. Wait 600 ms after each strategy and compare signatures. Retry the
      whole ladder up to 3 times with 500 ms between attempts.
-   - If no strategy moved the deck, treat it as end of presentation and stop.
+   - If no strategy moved the deck, stop and mark `reachedEnd`. If the deck total was
+     detected, report that the capture stopped early; otherwise report that the total could
+     not be detected.
    - Wait 800 ms for render stabilization before the next capture.
-3. Report a summary: total, captured, failed indexes, reachedEnd, cancelled, error.
+4. Report a summary: total, totalKnown, captured, failed indexes, reachedEnd, cancelled, error.
 
 All timing values are constants so they can be tuned after testing against a live deck.
 

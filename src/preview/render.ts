@@ -156,7 +156,9 @@ export function renderPreview(
     element(
       "p",
       "meta",
-      `${model.captured} of ${model.total} slides${
+      `${model.captured}${
+        model.totalKnown ? ` of ${model.total}` : ""
+      } slides${
         model.sourceHost ? ` · ${model.sourceHost}` : ""
       } · ${model.capturedAt}`,
     ),
@@ -214,12 +216,17 @@ export function renderPreview(
   if (model.status === "error" && model.error && !model.missing) {
     main.append(banner("error", "Capture stopped", model.error));
   }
-  if (model.limit !== null && model.total > model.limit) {
+  if (
+    model.limit !== null &&
+    (!model.totalKnown || model.total > model.limit)
+  ) {
     main.append(
       banner(
         "warning",
         "Partial capture",
-        `You requested the first ${model.limit} of ${model.total} slides.`,
+        model.totalKnown
+          ? `You requested the first ${model.limit} of ${model.total} slides.`
+          : `You requested the first ${model.limit} slides.`,
       ),
     );
   }
@@ -227,8 +234,12 @@ export function renderPreview(
     main.append(
       banner(
         "warning",
-        "Capture stopped early",
-        "The viewer stopped advancing before the end of the deck. Later slides may be missing.",
+        model.totalKnown ? "Capture stopped early" : "Capture stopped",
+        model.totalKnown
+          ? "The viewer stopped advancing before the end of the deck. Later slides may be missing."
+          : `The deck total could not be detected. The capture stopped after ${
+              model.captured + model.failed.length
+            } slides.`,
       ),
     );
   }

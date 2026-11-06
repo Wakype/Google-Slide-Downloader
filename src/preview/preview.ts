@@ -1,7 +1,13 @@
 import { openSessionStore } from "../shared/session-store";
 import { toErrorMessage } from "../shared/utils";
 import { createDemoCapture } from "./demo";
-import { downloadAll, downloadAllAndMerge, downloadSlide, type DownloadDeps } from "./downloads";
+import {
+  downloadAll,
+  downloadAllAndMerge,
+  downloadSlide,
+  saveWithAnchor,
+  type DownloadDeps,
+} from "./downloads";
 import { createLightbox } from "./lightbox";
 import {
   buildPreviewModel,
@@ -21,15 +27,7 @@ const root: HTMLElement = appRoot;
 
 function createDownloadDeps(): DownloadDeps {
   return {
-    save: (url, filename) => {
-      const anchor = document.createElement("a");
-      anchor.href = url;
-      anchor.download = filename;
-      anchor.rel = "noopener";
-      document.body.append(anchor);
-      anchor.click();
-      anchor.remove();
-    },
+    save: (url, filename) => saveWithAnchor(document, url, filename),
     sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
     openTab: (url) => {
       window.open(url, "_blank", "noopener");
@@ -70,8 +68,8 @@ function runDownload(
       setPreviewStatus(
         root,
         action === "merge"
-          ? "PDF24 opened. Downloads started."
-          : "Downloads started.",
+          ? "PDF24 opened. Download requests sent."
+          : "Download requests sent. Check the download shelf.",
         "success",
       );
     })

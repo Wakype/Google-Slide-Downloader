@@ -80,6 +80,7 @@ describe("background error handling counts", () => {
       type: "CAPTURE_ERROR",
       sessionId: "session-1",
       total: 0,
+      totalKnown: true,
       captured: 0,
       failed: [],
       error: "worker stopped",

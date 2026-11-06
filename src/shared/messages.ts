@@ -62,6 +62,7 @@ export interface CaptureCompleteMessage {
   type: "CAPTURE_COMPLETE";
   sessionId: string;
   total: number;
+  totalKnown: boolean;
   captured: number;
   failed: number[];
   reachedEnd: boolean;
@@ -71,6 +72,7 @@ export interface CaptureErrorMessage {
   type: "CAPTURE_ERROR";
   sessionId: string;
   total: number;
+  totalKnown: boolean;
   captured: number;
   failed: number[];
   error: string;

@@ -3,6 +3,7 @@ import {
   downloadAll,
   downloadAllAndMerge,
   downloadSlide,
+  saveWithAnchor,
   type DownloadDeps,
 } from "../src/preview/downloads";
 import { PDF24_MERGE_URL, TIMING } from "../src/shared/constants";
@@ -42,6 +43,21 @@ beforeEach(() => {
 });
 
 describe("preview downloads", () => {
+  it("creates an anchor with the exact href and download filename", () => {
+    const click = vi
+      .spyOn(HTMLAnchorElement.prototype, "click")
+      .mockImplementation(function (this: HTMLAnchorElement) {
+        expect(this.getAttribute("href")).toBe("blob:one");
+        expect(this.download).toBe("slide_001.png");
+      });
+
+    saveWithAnchor(document, "blob:one", "slide_001.png");
+
+    expect(click).toHaveBeenCalledTimes(1);
+    expect(document.querySelectorAll("a")).toHaveLength(0);
+    click.mockRestore();
+  });
+
   it("saves one slide with its filename", async () => {
     await downloadSlide(slides[0]!, deps);
 

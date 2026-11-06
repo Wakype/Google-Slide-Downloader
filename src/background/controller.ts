@@ -167,7 +167,7 @@ export function createBackgroundController(
       return {
         ok: false,
         error:
-          "Open a published Google Slides deck (/pub, /pubembed, /embed, or /preview) first.",
+          "Open a published Google Slides deck (/pub, /pubembed, /embed, /preview, or /present) first.",
       };
     }
 
@@ -311,7 +311,7 @@ export function createBackgroundController(
       {
         status: "complete",
         captured: message.captured,
-        total: message.total,
+        total: message.totalKnown ? message.total : null,
         failed: message.failed,
         reachedEnd: message.reachedEnd,
         error: null,
@@ -327,8 +327,11 @@ export function createBackgroundController(
       {
         status: "error",
         captured: Math.max(existing?.captured ?? 0, message.captured),
-        total:
-          message.total > 0 ? message.total : (existing?.total ?? null),
+        total: message.totalKnown
+          ? message.total > 0
+            ? message.total
+            : (existing?.total ?? null)
+          : null,
         failed:
           message.failed.length > 0
             ? message.failed

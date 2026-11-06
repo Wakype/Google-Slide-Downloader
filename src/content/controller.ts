@@ -27,6 +27,7 @@ export interface ContentControllerDeps {
   sleep: (ms: number) => Promise<void>;
   capture: (index: number) => Promise<CaptureResult>;
   advance: () => Promise<boolean>;
+  reset?: () => Promise<boolean>;
   runCaptureImpl?: typeof runCapture;
 }
 
@@ -49,6 +50,7 @@ export function createContentController(
     let failed: number[] = [];
     let summary: CaptureSummary = {
       total: 0,
+      totalKnown: false,
       captured: 0,
       failed: [],
       reachedEnd: false,
@@ -57,6 +59,15 @@ export function createContentController(
     };
 
     try {
+      if (deps.reset) {
+        const atStart = await deps.reset();
+        if (!atStart) {
+          throw new Error(
+            "Could not return to the first slide. Open slide 1 and try again.",
+          );
+        }
+      }
+
       const options: RunCaptureOptions = {
         document: deps.document,
         sleep: deps.sleep,
@@ -100,6 +111,7 @@ export function createContentController(
     } catch (error) {
       summary = {
         total,
+        totalKnown: false,
         captured,
         failed,
         reachedEnd: false,
@@ -114,6 +126,7 @@ export function createContentController(
           type: "CAPTURE_ERROR",
           sessionId: message.sessionId,
           total: summary.total,
+          totalKnown: summary.totalKnown,
           captured: summary.captured,
           failed: summary.failed,
           error: summary.error,
@@ -124,6 +137,7 @@ export function createContentController(
           type: "CAPTURE_COMPLETE",
           sessionId: message.sessionId,
           total: summary.total,
+          totalKnown: summary.totalKnown,
           captured: summary.captured,
           failed: summary.failed,
           reachedEnd: summary.reachedEnd,
