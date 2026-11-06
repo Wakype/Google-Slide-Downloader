@@ -16,6 +16,7 @@ export interface RunCaptureOptions {
   onProgress: (progress: CaptureProgress) => Promise<void> | void;
   isCancelled?: () => boolean;
   maxSlides?: number;
+  limit?: number | null;
   settleMs?: number;
   advanceAttempts?: number;
   advanceRetryMs?: number;
@@ -26,9 +27,17 @@ export async function runCapture(
 ): Promise<CaptureSummary> {
   const maxSlides = Math.min(options.maxSlides ?? MAX_SLIDES, MAX_SLIDES);
   const detectedTotal = parseTotalSlides(options.document);
-  const limit = Math.min(detectedTotal ?? maxSlides, maxSlides);
+  const requestedLimit =
+    options.limit !== null && options.limit !== undefined
+      ? Math.min(Math.max(1, Math.floor(options.limit)), maxSlides)
+      : maxSlides;
+  const loopLimit = Math.min(detectedTotal ?? requestedLimit, requestedLimit);
   const progressTotal =
-    detectedTotal !== null && detectedTotal <= maxSlides ? detectedTotal : 0;
+    detectedTotal !== null
+      ? Math.min(detectedTotal, requestedLimit)
+      : options.limit !== null && options.limit !== undefined
+        ? requestedLimit
+        : 0;
   const settleMs = options.settleMs ?? TIMING.settleMs;
   const advanceAttempts = options.advanceAttempts ?? TIMING.advanceAttempts;
   const advanceRetryMs = options.advanceRetryMs ?? TIMING.advanceRetryMs;
@@ -39,7 +48,7 @@ export async function runCapture(
   let cancelled = false;
   let error: string | null = null;
 
-  for (let index = 1; index <= limit; index += 1) {
+  for (let index = 1; index <= loopLimit; index += 1) {
     if (options.isCancelled?.()) {
       cancelled = true;
       break;
@@ -92,7 +101,7 @@ export async function runCapture(
       failed: [...failed],
     });
 
-    if (index >= limit) break;
+    if (index >= loopLimit) break;
 
     let moved = false;
     for (let attempt = 1; attempt <= advanceAttempts; attempt += 1) {
@@ -113,10 +122,7 @@ export async function runCapture(
     await options.sleep(settleMs);
   }
 
-  const total =
-    detectedTotal !== null && detectedTotal <= maxSlides
-      ? detectedTotal
-      : captured + failed.length;
+  const total = detectedTotal ?? captured + failed.length;
 
   return { total, captured, failed, reachedEnd, cancelled, error };
 }

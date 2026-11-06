@@ -20,6 +20,7 @@ function session(): CaptureSession {
     title: "Deck",
     createdAt: 1_000,
     total: 5,
+    limit: null,
     captured: 3,
     failed: [4],
     status: "capturing",

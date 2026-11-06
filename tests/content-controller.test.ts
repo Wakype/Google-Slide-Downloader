@@ -9,6 +9,7 @@ const runMessage = {
   sessionId: "session-1",
   sourceUrl: "https://docs.google.com/presentation/d/e/abc/pub",
   title: "Deck",
+  limit: null,
 };
 
 const summary: CaptureSummary = {
@@ -80,6 +81,27 @@ describe("content capture controller", () => {
       captured: 1,
       failed: [2],
     });
+  });
+
+  it("passes the requested slide limit to the capture loop", async () => {
+    const { runtime } = createRuntime();
+    const runCaptureImpl = vi.fn(async (options: RunCaptureOptions) => {
+      expect(options.limit).toBe(3);
+      return summary;
+    });
+    const controller = createContentController({
+      runtime,
+      document,
+      sleep: () => Promise.resolve(),
+      capture: vi.fn(),
+      advance: vi.fn(),
+      runCaptureImpl,
+    });
+
+    controller.run({ ...runMessage, limit: 3 });
+    await controller.whenIdle();
+
+    expect(runCaptureImpl).toHaveBeenCalledTimes(1);
   });
 
   it("reports whether a capture is running", async () => {

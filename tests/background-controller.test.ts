@@ -88,6 +88,7 @@ function baseSession(id: string): CaptureSession {
     title: "My Deck",
     createdAt: 1_000,
     total: 3,
+    limit: null,
     captured: 0,
     failed: [],
     status: "capturing",
@@ -118,7 +119,7 @@ describe("background capture controller", () => {
       uuid: () => "session-1",
     });
 
-    const result = await controller.startCapture();
+    const result = await controller.startCapture({ type: "START_CAPTURE", limit: null });
 
     expect(result).toEqual({ ok: true, sessionId: "session-1" });
     expect(await store.getSession("session-1")).toMatchObject({
@@ -139,6 +140,46 @@ describe("background capture controller", () => {
     expect(chrome.sessionStorage.get("active:7")).toBe("session-1");
   });
 
+  it("stores and forwards a requested slide limit", async () => {
+    const chrome = createFakeChrome();
+    const controller = createBackgroundController({
+      chrome: chrome.api,
+      store,
+      now: () => 1,
+      uuid: () => "session-1",
+    });
+
+    const result = await controller.startCapture({
+      type: "START_CAPTURE",
+      limit: 5,
+    });
+
+    expect(result.ok).toBe(true);
+    expect((await store.getSession("session-1"))?.limit).toBe(5);
+    expect(chrome.tabs.sendMessage).toHaveBeenCalledWith(
+      7,
+      expect.objectContaining({ type: "RUN_CAPTURE", limit: 5 }),
+    );
+  });
+
+  it("rejects an invalid slide limit before touching the tab", async () => {
+    const chrome = createFakeChrome();
+    const controller = createBackgroundController({
+      chrome: chrome.api,
+      store,
+      now: () => 1,
+      uuid: () => "session-1",
+    });
+
+    const result = await controller.startCapture({
+      type: "START_CAPTURE",
+      limit: 0,
+    });
+
+    expect(result.ok).toBe(false);
+    expect(chrome.tabs.query).not.toHaveBeenCalled();
+  });
+
   it("rejects unsupported pages", async () => {
     const chrome = createFakeChrome();
     chrome.tabs.query.mockResolvedValueOnce([
@@ -151,7 +192,7 @@ describe("background capture controller", () => {
       uuid: () => "session-1",
     });
 
-    const result = await controller.startCapture();
+    const result = await controller.startCapture({ type: "START_CAPTURE", limit: null });
 
     expect(result.ok).toBe(false);
     expect(chrome.tabs.sendMessage).not.toHaveBeenCalled();
@@ -169,7 +210,7 @@ describe("background capture controller", () => {
       uuid: () => "session-2",
     });
 
-    const result = await controller.startCapture();
+    const result = await controller.startCapture({ type: "START_CAPTURE", limit: null });
 
     expect(result).toEqual({
       ok: false,
@@ -197,7 +238,7 @@ describe("background capture controller", () => {
       uuid: () => "session-2",
     });
 
-    const result = await controller.startCapture();
+    const result = await controller.startCapture({ type: "START_CAPTURE", limit: null });
 
     expect(result.ok).toBe(true);
     expect((await store.getSession("stale"))?.status).toBe("error");
@@ -223,7 +264,7 @@ describe("background capture controller", () => {
       uuid: () => "session-2",
     });
 
-    const result = await controller.startCapture();
+    const result = await controller.startCapture({ type: "START_CAPTURE", limit: null });
 
     expect(result.ok).toBe(true);
     expect((await store.getSession("stale"))?.status).toBe("error");
@@ -246,7 +287,7 @@ describe("background capture controller", () => {
       uuid: () => "session-1",
     });
 
-    const result = await controller.startCapture();
+    const result = await controller.startCapture({ type: "START_CAPTURE", limit: null });
 
     expect(result).toEqual({ ok: false, error: "already-running" });
     expect((await store.getSession("session-1"))?.status).toBe("error");
@@ -266,7 +307,7 @@ describe("background capture controller", () => {
       uuid: () => "session-1",
     });
 
-    const result = await controller.startCapture();
+    const result = await controller.startCapture({ type: "START_CAPTURE", limit: null });
 
     expect(result.ok).toBe(true);
     expect(chrome.scripting.executeScript).toHaveBeenCalledWith({

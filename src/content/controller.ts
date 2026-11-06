@@ -90,6 +90,7 @@ export function createContentController(
           };
           await deps.runtime.sendMessage(payload);
         },
+        limit: message.limit,
         settleMs: TIMING.settleMs,
         advanceAttempts: TIMING.advanceAttempts,
         advanceRetryMs: TIMING.advanceRetryMs,

@@ -28,6 +28,7 @@ function model(): PreviewModel {
     isDemo: false,
     missing: false,
     reachedEnd: false,
+    limit: null,
     degradedCount: 0,
     downloadFolder: "Slides/My deck",
     slides: [slide(1), slide(2), slide(3)],

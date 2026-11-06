@@ -25,6 +25,7 @@ function state(overrides: Partial<PopupState> = {}): PopupState {
     title: "My deck",
     error: null,
     supported: true,
+    limit: null,
     ...overrides,
   };
 }
@@ -57,6 +58,35 @@ describe("renderPopup", () => {
 
     startButton(root).click();
     expect(onStart).toHaveBeenCalledTimes(1);
+  });
+
+  it("defaults to all slides and allows a custom slide count", () => {
+    const root = setupRoot();
+    const onStart = vi.fn();
+    renderPopup(root, state(), onStart);
+
+    const all = root.querySelector<HTMLInputElement>(
+      'input[name="capture-mode"][value="all"]',
+    );
+    const some = root.querySelector<HTMLInputElement>(
+      'input[name="capture-mode"][value="some"]',
+    );
+    const count = root.querySelector<HTMLInputElement>(".count-input");
+
+    expect(all?.checked).toBe(true);
+    expect(count?.disabled).toBe(true);
+
+    startButton(root).click();
+    expect(onStart).toHaveBeenLastCalledWith(null);
+
+    if (some && count) {
+      some.checked = true;
+      some.dispatchEvent(new Event("change", { bubbles: true }));
+      expect(count.disabled).toBe(false);
+      count.value = "3";
+    }
+    startButton(root).click();
+    expect(onStart).toHaveBeenLastCalledWith(3);
   });
 
   it("explains unsupported pages and disables Start", () => {
@@ -135,6 +165,26 @@ describe("popup controller", () => {
 
     expect(root.textContent).toContain("/pub, /pubembed, /embed, or /preview");
     expect(startButton(root).disabled).toBe(true);
+  });
+
+  it("sends the selected slide count to the background worker", async () => {
+    const root = setupRoot();
+    const env = environment();
+    const controller = createPopupController(root, env);
+    await controller.init();
+
+    const some = root.querySelector<HTMLInputElement>(
+      'input[name="capture-mode"][value="some"]',
+    );
+    const count = root.querySelector<HTMLInputElement>(".count-input");
+    if (some && count) {
+      some.checked = true;
+      some.dispatchEvent(new Event("change", { bubbles: true }));
+      count.value = "4";
+    }
+    startButton(root).click();
+
+    expect(env.sendStart).toHaveBeenCalledWith(4);
   });
 
   it("closes the popup after a successful start", async () => {

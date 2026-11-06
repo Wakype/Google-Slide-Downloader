@@ -17,7 +17,8 @@ storage, and delivery into proper extension surfaces.
 ## Goals
 
 - Start a capture from the toolbar popup with one click.
-- Capture every slide in a published/embedded Google Slides viewer at native resolution.
+- Capture every slide, or only the first N slides, in a published/embedded Google Slides
+  viewer at native resolution.
 - Keep the Google Slides tab focused during capture so Chromium does not throttle it.
 - Store captures as Blobs in IndexedDB, not in one giant runtime message.
 - Open a preview tab when capture ends, including partial/error results.
@@ -131,6 +132,7 @@ interface CaptureSession {
   title: string;
   createdAt: number;
   total: number | null;
+  limit: number | null;
   captured: number;
   failed: number[];
   status: "capturing" | "complete" | "error";
@@ -159,7 +161,8 @@ The preview page opens the same database from the extension origin.
 
 1. Read the expected slide count from `[aria-setsize]`, then from the viewer caption
    text ("3 of 20"), else `null`. `null` means "walk until advancing fails", capped at
-   `MAX_SLIDES` (500).
+   `MAX_SLIDES` (500). If the popup requested a limit, the loop stops after that many
+   slides even when the deck has more; the preview still reports the detected deck total.
 2. For each slide index:
    - Snapshot the viewer signature (caption + SVG text/hash) before advancing.
    - Clone the current SVG, ask the worker to fetch every non-data `<image>` and return a
@@ -183,6 +186,7 @@ All timing values are constants so they can be tuned after testing against a liv
 
 - Product mark, title, and a one-line promise.
 - Status pill: supported deck, unsupported page, or checking.
+- Capture scope: **All slides** (default) or **Some slides** with a number input (1–500).
 - Primary button: **Start Capture** with a slide icon.
 - Helper line: keep the presentation tab visible; capture takes about a second per slide.
 - Inline error next to the button when start fails.

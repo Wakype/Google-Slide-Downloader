@@ -7,6 +7,7 @@ export interface CaptureSession {
   title: string;
   createdAt: number;
   total: number | null;
+  limit: number | null;
   captured: number;
   failed: number[];
   status: CaptureStatus;

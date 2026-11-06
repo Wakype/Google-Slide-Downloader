@@ -7,8 +7,10 @@ import type {
   CaptureSlideMessage,
   PingMessage,
   RunCaptureMessage,
+  StartCaptureMessage,
   StartCaptureResponse,
 } from "../shared/messages";
+import { MAX_SLIDES } from "../shared/constants";
 import type { SessionStore } from "../shared/session-store";
 import type { CaptureSession, SlideRecord } from "../shared/types";
 import {
@@ -60,7 +62,7 @@ export interface BackgroundDeps {
 }
 
 export interface BackgroundController {
-  startCapture(): Promise<StartCaptureResponse>;
+  startCapture(message: StartCaptureMessage): Promise<StartCaptureResponse>;
   handleSlide(message: CaptureSlideMessage): Promise<Ack>;
   handleProgress(message: CaptureProgressMessage): Promise<void>;
   handleComplete(message: CaptureCompleteMessage): Promise<void>;
@@ -136,7 +138,22 @@ export function createBackgroundController(
     return { ok: false, error };
   }
 
-  async function startCapture(): Promise<StartCaptureResponse> {
+  async function startCapture(
+    message: StartCaptureMessage,
+  ): Promise<StartCaptureResponse> {
+    const requestedLimit = message.limit;
+    if (
+      requestedLimit !== null &&
+      (!Number.isInteger(requestedLimit) ||
+        requestedLimit < 1 ||
+        requestedLimit > MAX_SLIDES)
+    ) {
+      return {
+        ok: false,
+        error: `Enter a slide count between 1 and ${MAX_SLIDES}.`,
+      };
+    }
+
     const [tab] = await deps.chrome.tabs.query({
       active: true,
       currentWindow: true,
@@ -184,6 +201,7 @@ export function createBackgroundController(
       title,
       createdAt: deps.now(),
       total: null,
+      limit: requestedLimit,
       captured: 0,
       failed: [],
       status: "capturing",
@@ -201,6 +219,7 @@ export function createBackgroundController(
       sessionId,
       sourceUrl,
       title,
+      limit: requestedLimit,
     };
 
     let ack: Ack;

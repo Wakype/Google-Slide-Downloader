@@ -10,6 +10,7 @@ use, but the extension is the recommended workflow.
 ## Features
 
 - One-click capture from the toolbar popup.
+- Choose **All slides** (default) or **Some slides** and enter how many slides to capture.
 - Captures `/pub`, `/pubembed`, `/present`, `/embed`, and `/preview` Google Slides viewers.
 - Streams each slide to the extension worker as it is captured, so large decks do not
   sit in memory or in one giant message.
@@ -49,8 +50,9 @@ For development, `npm run watch` rebuilds on changes. Reload the extension from
    ```text
    https://docs.google.com/presentation/d/e/<PRESENTATION_ID>/pub
    ```
-2. Click the **Slides Capture** icon and press **Start Capture**.
-3. Keep the presentation tab visible. Chromium throttles background tabs, which can slow
+2. Click the **Slides Capture** icon. Leave **All slides** selected, or choose
+   **Some slides** and enter how many slides to capture from the start.
+3. Press **Start Capture**. Keep the presentation tab visible. Chromium throttles background tabs, which can slow
    or stall slide transitions. Progress appears on the extension badge.
 4. When the capture finishes, a preview tab opens automatically.
 5. Use:
@@ -65,6 +67,9 @@ For development, `npm run watch` rebuilds on changes. Reload the extension from
 PDF24 opens after the downloads start. A browser cannot attach local files to another
 site, so add the downloaded PNGs in PDF24 and merge them there. PDF24 accepts PNG and JPG
 images directly.
+
+A partial capture stops after the requested number of slides. The preview still shows the
+deck's detected total and a **Partial capture** banner, for example “first 5 of 43 slides”.
 
 Files are named `slide_001.png`, `slide_002.png`, and so on, inside a per-deck folder
 under `Downloads/Slides/`.

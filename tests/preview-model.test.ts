@@ -12,6 +12,7 @@ const session: CaptureSession = {
   title: "My: Deck",
   createdAt: 1_700_000_000_000,
   total: 2,
+  limit: null,
   captured: 2,
   failed: [],
   status: "complete",
@@ -73,6 +74,19 @@ describe("buildPreviewModel", () => {
     expect(model.isEmpty).toBe(true);
     expect(model.total).toBe(2);
     expect(model.captured).toBe(0);
+  });
+
+  it("carries a partial-capture limit while keeping the deck total", () => {
+    const model = buildPreviewModel(
+      { ...session, total: 5, limit: 2, captured: 2 },
+      slides,
+      new Map([
+        ["session-1:1", "blob:one"],
+        ["session-1:2", "blob:two"],
+      ]),
+    );
+    expect(model.limit).toBe(2);
+    expect(model.total).toBe(5);
   });
 
   it("counts slides with missing embedded images", () => {

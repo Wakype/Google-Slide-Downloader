@@ -10,6 +10,7 @@ import type {
   CaptureSlideMessage,
   FetchAssetResponse,
   RuntimeMessage,
+  StartCaptureMessage,
 } from "./shared/messages";
 import { openSessionStore } from "./shared/session-store";
 import { toErrorMessage } from "./shared/utils";
@@ -49,7 +50,7 @@ async function handle(message: RuntimeMessage): Promise<unknown> {
   const controller = await getController();
   switch (message.type) {
     case "START_CAPTURE":
-      return controller.startCapture();
+      return controller.startCapture(message as StartCaptureMessage);
     case "CAPTURE_SLIDE":
       return controller.handleSlide(message as CaptureSlideMessage);
     case "CAPTURE_PROGRESS":

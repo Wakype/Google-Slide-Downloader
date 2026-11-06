@@ -28,6 +28,7 @@ export interface PreviewModel {
   isDemo: boolean;
   missing: boolean;
   reachedEnd: boolean;
+  limit: number | null;
   degradedCount: number;
   downloadFolder: string;
   slides: PreviewSlide[];
@@ -63,6 +64,7 @@ export function buildPreviewModel(
     isDemo,
     missing: false,
     reachedEnd: session.reachedEnd,
+    limit: session.limit,
     degradedCount: slides.filter((slide) => slide.warning).length,
     downloadFolder: buildDeckFolder(session.title),
     slides: slides.map((slide) => ({
@@ -92,6 +94,7 @@ export function createMissingModel(): PreviewModel {
     isDemo: false,
     missing: true,
     reachedEnd: false,
+    limit: null,
     degradedCount: 0,
     downloadFolder: "Slides",
     slides: [],
