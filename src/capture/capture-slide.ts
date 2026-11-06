@@ -46,6 +46,7 @@ async function inlineImages(
         image.setAttribute("href", dataUrl);
       } catch (error) {
         failed.push(href);
+        image.remove();
         console.warn("Sub-image asset skipped:", href, error);
       }
     }),
@@ -97,23 +98,46 @@ function blobToDataUrl(blob: Blob): Promise<string> {
   });
 }
 
-function svgDimensions(svg: SVGSVGElement): { width: number; height: number } {
+function safeLengthValue(length: SVGAnimatedLength | undefined): number | null {
+  try {
+    const value = length?.baseVal?.value;
+    return typeof value === "number" && Number.isFinite(value) && value > 0
+      ? value
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+function safeViewBoxValue(value: number | undefined): number | null {
+  return typeof value === "number" && Number.isFinite(value) && value > 0
+    ? value
+    : null;
+}
+
+export function getSvgDimensions(svg: SVGSVGElement): {
+  width: number;
+  height: number;
+} {
   const viewBox = svg.viewBox?.baseVal;
-  const width = Math.max(
-    1,
-    Math.round(svg.width?.baseVal?.value || viewBox?.width || 1920),
-  );
-  const height = Math.max(
-    1,
-    Math.round(svg.height?.baseVal?.value || viewBox?.height || 1080),
-  );
-  return { width, height };
+  const width =
+    safeLengthValue(svg.width) ??
+    safeViewBoxValue(viewBox?.width) ??
+    1920;
+  const height =
+    safeLengthValue(svg.height) ??
+    safeViewBoxValue(viewBox?.height) ??
+    1080;
+  return {
+    width: Math.max(1, Math.round(width)),
+    height: Math.max(1, Math.round(height)),
+  };
 }
 
 export async function rasterizeSvgElement(
   svg: SVGSVGElement,
 ): Promise<{ dataUrl: string; width: number; height: number }> {
-  const { width, height } = svgDimensions(svg);
+  const { width, height } = getSvgDimensions(svg);
   const serialized = new XMLSerializer().serializeToString(svg);
   const svgBlob = new Blob([serialized], {
     type: "image/svg+xml;charset=utf-8",
@@ -141,15 +165,19 @@ export async function rasterizeSvgElement(
   }
 }
 
-export function createCaptureSlideDeps(): CaptureSlideDeps {
+export function createCaptureSlideDeps(
+  fetchImageAsDataUrl?: (href: string) => Promise<string>,
+): CaptureSlideDeps {
   return {
-    fetchImageAsDataUrl: async (href) => {
-      const response = await fetch(href);
-      if (!response.ok) {
-        throw new Error(`image-fetch-failed:${response.status}`);
-      }
-      return blobToDataUrl(await response.blob());
-    },
+    fetchImageAsDataUrl:
+      fetchImageAsDataUrl ??
+      (async (href) => {
+        const response = await fetch(href);
+        if (!response.ok) {
+          throw new Error(`image-fetch-failed:${response.status}`);
+        }
+        return blobToDataUrl(await response.blob());
+      }),
     rasterize: (svg) => rasterizeSvgElement(svg),
   };
 }

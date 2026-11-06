@@ -64,9 +64,13 @@ describe("extension manifest", () => {
     expect(manifest.permissions).toEqual(
       expect.arrayContaining(["tabs", "scripting", "downloads", "storage"]),
     );
-    expect(manifest.host_permissions).toEqual([
-      "https://docs.google.com/presentation/*",
-    ]);
+    expect(manifest.host_permissions).toEqual(
+      expect.arrayContaining([
+        "https://docs.google.com/presentation/*",
+        "https://docs.google.com/slides-images-rt/*",
+        "https://*.googleusercontent.com/*",
+      ]),
+    );
   });
 
   it("has source shells and icon sources for every referenced file", () => {

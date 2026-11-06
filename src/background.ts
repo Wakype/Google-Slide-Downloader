@@ -1,3 +1,4 @@
+import { fetchAssetAsDataUrl } from "./background/assets";
 import {
   createBackgroundController,
   type BackgroundChrome,
@@ -7,9 +8,11 @@ import type {
   CaptureErrorMessage,
   CaptureProgressMessage,
   CaptureSlideMessage,
+  FetchAssetResponse,
   RuntimeMessage,
 } from "./shared/messages";
 import { openSessionStore } from "./shared/session-store";
+import { toErrorMessage } from "./shared/utils";
 
 type Controller = ReturnType<typeof createBackgroundController>;
 
@@ -29,6 +32,20 @@ function getController(): Promise<Controller> {
 }
 
 async function handle(message: RuntimeMessage): Promise<unknown> {
+  if (message.type === "FETCH_ASSET") {
+    try {
+      return {
+        ok: true,
+        dataUrl: await fetchAssetAsDataUrl(message.url),
+      } satisfies FetchAssetResponse;
+    } catch (error) {
+      return {
+        ok: false,
+        error: toErrorMessage(error),
+      } satisfies FetchAssetResponse;
+    }
+  }
+
   const controller = await getController();
   switch (message.type) {
     case "START_CAPTURE":

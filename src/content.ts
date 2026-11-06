@@ -4,9 +4,24 @@ import {
   createCaptureSlideDeps,
 } from "./capture/capture-slide";
 import { createContentController } from "./content/controller";
-import type { PingMessage, RunCaptureMessage } from "./shared/messages";
+import {
+  isFetchAssetResponse,
+  type FetchAssetMessage,
+  type PingMessage,
+  type RunCaptureMessage,
+} from "./shared/messages";
 
-const slideDeps = createCaptureSlideDeps();
+const slideDeps = createCaptureSlideDeps(async (href) => {
+  const response = await chrome.runtime.sendMessage({
+    type: "FETCH_ASSET",
+    url: href,
+  } satisfies FetchAssetMessage);
+  if (!isFetchAssetResponse(response)) {
+    throw new Error("asset-fetch-failed");
+  }
+  if (!response.ok) throw new Error(response.error);
+  return response.dataUrl;
+});
 
 const controller = createContentController({
   runtime: {

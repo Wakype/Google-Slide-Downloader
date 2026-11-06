@@ -98,6 +98,8 @@ popup ──START_CAPTURE──▶ background service worker
 | `downloads` | Save PNGs without the multiple-file prompt. |
 | `storage` | Track the active capture per tab in `chrome.storage.session`. |
 | `https://docs.google.com/presentation/*` | Run the capture content script. |
+| `https://docs.google.com/slides-images-rt/*` | Fetch embedded slide images in the worker so they can be inlined before rasterization. |
+| `https://*.googleusercontent.com/*` | Fetch Google-hosted slide images in the worker. |
 
 The extension has no analytics, no remote code, and no server. Slide data stays in the
 extension's IndexedDB until you clear extension data or remove the extension. PDF24 is
@@ -150,7 +152,7 @@ docs/superpowers/          design and implementation plan
 | **Start Capture is disabled** | The active tab is not a supported Slides viewer. | Open a `/pub`, `/pubembed`, `/present`, `/embed`, or `/preview` URL. |
 | **Capture stalls or skips slides** | The presentation tab was backgrounded or the viewer changed. | Keep the tab visible, reload, and try again. |
 | **Only some slides appear** | One or more slides failed to rasterize, or the deck ended early. | The preview lists failed slide numbers. Re-run the capture. |
-| **Images inside slides are blank** | A remote slide asset could not be inlined before rasterization. | Retry on a stable connection; heavy decks benefit from a longer settle time. |
+| **Some slides say "Missing images"** | The worker could not fetch an embedded slide image, so that image was removed and the slide was still captured. | Reload the presentation and retry; check the extension's service-worker console for the asset URL. |
 | **PDF24 has no files** | The browser cannot pre-fill a third-party upload. | Drag the downloaded PNGs from `Downloads/Slides/` into PDF24. |
 | **Content script does not respond** | The tab was open before the extension was installed or reloaded. | Reload the presentation tab, or retry; the worker injects the script automatically. |
 

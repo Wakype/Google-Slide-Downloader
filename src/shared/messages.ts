@@ -17,6 +17,26 @@ export type PingResponse =
   | { ok: true; running: boolean }
   | { ok: false; error: string };
 
+export interface FetchAssetMessage {
+  type: "FETCH_ASSET";
+  url: string;
+}
+
+export type FetchAssetResponse =
+  | { ok: true; dataUrl: string }
+  | { ok: false; error: string };
+
+export function isFetchAssetResponse(
+  value: unknown,
+): value is FetchAssetResponse {
+  if (typeof value !== "object" || value === null) return false;
+  if (!("ok" in value)) return false;
+  if ((value as { ok: unknown }).ok === true) {
+    return typeof (value as { dataUrl?: unknown }).dataUrl === "string";
+  }
+  return typeof (value as { error?: unknown }).error === "string";
+}
+
 export interface CaptureSlideMessage {
   type: "CAPTURE_SLIDE";
   sessionId: string;
@@ -58,6 +78,7 @@ export type RuntimeMessage =
   | StartCaptureMessage
   | RunCaptureMessage
   | PingMessage
+  | FetchAssetMessage
   | CaptureSlideMessage
   | CaptureProgressMessage
   | CaptureCompleteMessage
