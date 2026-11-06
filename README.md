@@ -171,11 +171,17 @@ npm run package
 ```
 
 `npm run package` writes `release/slides-capture-<version>.zip` with `manifest.json` at the
-ZIP root and omits source maps. Then create a GitHub release with the ZIP as an asset; see
-`docs/GITHUB_RELEASES.md` for the exact commands and install notes.
+ZIP root and omits source maps. Maintainers upload that ZIP as a GitHub release asset. The
+privacy policy is `PRIVACY.md`.
 
-The privacy policy is `PRIVACY.md`. `docs/CHROME_WEB_STORE.md` is kept as an optional guide;
-publishing there requires a paid Chrome Web Store developer registration.
+## Contributing
+
+See `CONTRIBUTING.md` for setup, tests, architecture notes, and the pull request process.
+Use GitHub issues for bug reports and feature requests.
+
+## License
+
+MIT © 2026 Wakype. See `LICENSE`.
 
 ## Project layout
 
@@ -191,7 +197,6 @@ src/shared/                types, messages, constants, IndexedDB, utilities, ico
 src/popup/                 popup UI
 src/preview/               preview UI, downloads, demo mode
 tests/                     Vitest suites
-docs/superpowers/          design and implementation plan
 ```
 
 ## Troubleshooting
