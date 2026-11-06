@@ -48,6 +48,7 @@ describe("runCapture", () => {
     expect(onSlide).toHaveBeenCalledTimes(3);
     expect(summary).toEqual({
       total: 3,
+      totalKnown: true,
       captured: 3,
       failed: [],
       reachedEnd: false,
@@ -135,7 +136,8 @@ describe("runCapture", () => {
     });
 
     expect(summary.captured).toBe(1);
-    expect(summary.reachedEnd).toBe(false);
+    expect(summary.totalKnown).toBe(false);
+    expect(summary.reachedEnd).toBe(true);
   });
 
   it("flags an early stop when the expected total is known", async () => {
@@ -151,6 +153,7 @@ describe("runCapture", () => {
     });
 
     expect(summary.total).toBe(5);
+    expect(summary.totalKnown).toBe(true);
     expect(summary.captured).toBe(1);
     expect(summary.reachedEnd).toBe(true);
   });
@@ -216,7 +219,8 @@ describe("runCapture", () => {
     });
 
     expect(summary.total).toBe(1);
-    expect(summary.reachedEnd).toBe(false);
+    expect(summary.totalKnown).toBe(false);
+    expect(summary.reachedEnd).toBe(true);
     expect(summary.captured).toBe(1);
   });
 
@@ -240,7 +244,8 @@ describe("runCapture", () => {
     });
 
     expect(summary.total).toBe(3);
+    expect(summary.totalKnown).toBe(false);
     expect(summary.captured).toBe(3);
-    expect(summary.reachedEnd).toBe(false);
+    expect(summary.reachedEnd).toBe(true);
   });
 });

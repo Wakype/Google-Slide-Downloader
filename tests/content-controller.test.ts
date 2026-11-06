@@ -14,6 +14,7 @@ const runMessage = {
 
 const summary: CaptureSummary = {
   total: 2,
+  totalKnown: true,
   captured: 1,
   failed: [2],
   reachedEnd: false,
@@ -80,6 +81,56 @@ describe("content capture controller", () => {
       type: "CAPTURE_COMPLETE",
       captured: 1,
       failed: [2],
+    });
+  });
+
+  it("returns to the first slide before capturing", async () => {
+    const { runtime } = createRuntime();
+    const order: string[] = [];
+    const reset = vi.fn(async () => {
+      order.push("reset");
+      return true;
+    });
+    const runCaptureImpl = vi.fn(async () => {
+      order.push("run");
+      return summary;
+    });
+    const controller = createContentController({
+      runtime,
+      document,
+      sleep: () => Promise.resolve(),
+      capture: vi.fn(),
+      advance: vi.fn(),
+      reset,
+      runCaptureImpl,
+    });
+
+    controller.run(runMessage);
+    await controller.whenIdle();
+
+    expect(order).toEqual(["reset", "run"]);
+  });
+
+  it("aborts when the viewer cannot return to the first slide", async () => {
+    const { messages, runtime } = createRuntime();
+    const runCaptureImpl = vi.fn();
+    const controller = createContentController({
+      runtime,
+      document,
+      sleep: () => Promise.resolve(),
+      capture: vi.fn(),
+      advance: vi.fn(),
+      reset: async () => false,
+      runCaptureImpl,
+    });
+
+    controller.run(runMessage);
+    await controller.whenIdle();
+
+    expect(runCaptureImpl).not.toHaveBeenCalled();
+    expect(messages.at(-1)).toMatchObject({
+      type: "CAPTURE_ERROR",
+      error: expect.stringContaining("first slide"),
     });
   });
 

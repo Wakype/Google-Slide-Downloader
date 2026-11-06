@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Slides Capture",
   "version": "1.0.0",
-  "description": "Capture published Google Slides as high-resolution PNGs and merge them into a PDF.",
+  "description": "Capture published Google Slides as high-resolution PNGs and send them to PDF24 to merge into a PDF.",
   "minimum_chrome_version": "116",
   "permissions": ["tabs", "scripting", "storage"],
   "host_permissions": [

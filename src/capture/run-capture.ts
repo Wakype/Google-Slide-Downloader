@@ -115,7 +115,7 @@ export async function runCapture(
     }
 
     if (!moved) {
-      reachedEnd = detectedTotal !== null;
+      reachedEnd = true;
       break;
     }
 
@@ -124,5 +124,13 @@ export async function runCapture(
 
   const total = detectedTotal ?? captured + failed.length;
 
-  return { total, captured, failed, reachedEnd, cancelled, error };
+  return {
+    total,
+    totalKnown: detectedTotal !== null,
+    captured,
+    failed,
+    reachedEnd,
+    cancelled,
+    error,
+  };
 }

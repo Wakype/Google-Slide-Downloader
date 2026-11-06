@@ -20,6 +20,7 @@ function model(): PreviewModel {
     sourceHost: "docs.google.com",
     capturedAt: "Nov 6, 2026, 10:00 AM",
     total: 3,
+    totalKnown: true,
     captured: 3,
     failed: [],
     status: "complete",
@@ -99,6 +100,59 @@ describe("lightbox", () => {
       new KeyboardEvent("keydown", { key: "ArrowLeft", bubbles: true }),
     );
     expect(lightbox.currentIndex()).toBe(0);
+  });
+
+  it("keeps focus on the next/previous control after navigation", () => {
+    const lightbox = createLightbox(model(), { onDownload: vi.fn() });
+    lightbox.open(0);
+
+    lightbox.next();
+    expect(document.activeElement?.classList.contains("lightbox-next")).toBe(
+      true,
+    );
+
+    lightbox.previous();
+    expect(document.activeElement?.classList.contains("lightbox-prev")).toBe(
+      true,
+    );
+  });
+
+  it("traps Tab focus inside the dialog", () => {
+    const lightbox = createLightbox(model(), { onDownload: vi.fn() });
+    lightbox.open(0);
+
+    const download =
+      document.querySelector<HTMLButtonElement>(".lightbox-download");
+    download?.focus();
+    document.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Tab", bubbles: true }),
+    );
+    expect(document.activeElement?.classList.contains("lightbox-prev")).toBe(
+      true,
+    );
+
+    document.dispatchEvent(
+      new KeyboardEvent("keydown", {
+        key: "Tab",
+        shiftKey: true,
+        bubbles: true,
+      }),
+    );
+    expect(
+      document.activeElement?.classList.contains("lightbox-download"),
+    ).toBe(true);
+  });
+
+  it("does not open with no slides", () => {
+    const lightbox = createLightbox(
+      { ...model(), slides: [] },
+      { onDownload: vi.fn() },
+    );
+
+    lightbox.open(0);
+
+    expect(lightbox.isOpen()).toBe(false);
+    expect(dialog()).toBeNull();
   });
 
   it("downloads the currently visible slide", () => {

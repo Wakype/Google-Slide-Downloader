@@ -1,3 +1,4 @@
+import { MAX_SLIDES } from "../shared/constants";
 import { createIcon } from "../shared/icons";
 import type {
   StartCaptureMessage,
@@ -70,7 +71,7 @@ function statusDetail(state: PopupState): string {
     case "ready":
       return state.title ?? "Published presentation detected.";
     case "unsupported":
-      return "Open a published Google Slides deck (/pub, /pubembed, /embed, or /preview).";
+      return "Open a published Google Slides deck (/pub, /pubembed, /embed, /preview, or /present).";
     case "starting":
       return "The popup closes and progress moves to the toolbar badge.";
     case "error":
@@ -132,7 +133,7 @@ export function renderPopup(
   const countInput = element("input", "count-input");
   countInput.type = "number";
   countInput.min = "1";
-  countInput.max = "500";
+  countInput.max = String(MAX_SLIDES);
   countInput.step = "1";
   countInput.value = String(state.limit ?? 5);
   countInput.disabled = state.limit === null;
@@ -152,7 +153,7 @@ export function renderPopup(
     if (!someRadio.checked) return null;
     const parsed = Number.parseInt(countInput.value, 10);
     const clamped = Number.isFinite(parsed)
-      ? Math.min(500, Math.max(1, parsed))
+      ? Math.min(MAX_SLIDES, Math.max(1, parsed))
       : 1;
     countInput.value = String(clamped);
     return clamped;
@@ -221,6 +222,9 @@ export function createPopupController(
     renderPopup(root, state, (limit) => {
       void start(limit);
     });
+    if (state.phase === "error") {
+      root.querySelector<HTMLButtonElement>(".start-button")?.focus();
+    }
   }
 
   async function init(): Promise<void> {
@@ -257,7 +261,12 @@ export function createPopupController(
   }
 
   async function start(limit: number | null = null): Promise<void> {
-    if (state.phase !== "ready" || !state.supported) return;
+    if (
+      !state.supported ||
+      (state.phase !== "ready" && state.phase !== "error")
+    ) {
+      return;
+    }
 
     state = { ...state, phase: "starting", limit, error: null };
     draw();

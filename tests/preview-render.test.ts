@@ -24,6 +24,7 @@ function model(overrides: Partial<PreviewModel> = {}): PreviewModel {
     sourceHost: "docs.google.com",
     capturedAt: "Nov 6, 2026, 10:00 AM",
     total: 2,
+    totalKnown: true,
     captured: 2,
     failed: [],
     status: "complete",
@@ -170,6 +171,18 @@ describe("renderPreview", () => {
 
     expect(root.textContent).toContain("Partial capture");
     expect(root.textContent).toContain("first 2 of 5");
+  });
+
+  it("warns when the deck total could not be detected", () => {
+    const root = document.getElementById("app") as HTMLElement;
+    renderPreview(
+      root,
+      model({ totalKnown: false, total: 3, captured: 3, reachedEnd: true }),
+      handlers(),
+    );
+
+    expect(root.textContent).toContain("could not be detected");
+    expect(root.textContent).toContain("3 slides");
   });
 
   it("warns when the viewer stopped before the end of the deck", () => {

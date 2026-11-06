@@ -119,7 +119,7 @@ export function createLightbox(
   let index: number | null = null;
   let overlay: HTMLElement | null = null;
 
-  function render(): void {
+  function render(focus: "close" | "prev" | "next" = "close"): void {
     if (index === null) return;
     const slide = model.slides[index];
     if (!slide) return;
@@ -133,13 +133,18 @@ export function createLightbox(
     });
     document.body.append(overlay);
     document.body.classList.add("has-lightbox");
-    overlay.querySelector<HTMLButtonElement>(".lightbox-close")?.focus();
+    overlay
+      .querySelector<HTMLButtonElement>(`.lightbox-${focus}`)
+      ?.focus();
   }
 
-  function open(nextIndex: number): void {
+  function open(
+    nextIndex: number,
+    focus: "close" | "prev" | "next" = "close",
+  ): void {
     if (nextIndex < 0 || nextIndex >= total) return;
     index = nextIndex;
-    render();
+    render(focus);
   }
 
   function close(): void {
@@ -154,12 +159,12 @@ export function createLightbox(
 
   function next(): void {
     if (index === null) return;
-    open((index + 1) % total);
+    open((index + 1) % total, "next");
   }
 
   function previous(): void {
     if (index === null) return;
-    open((index - 1 + total) % total);
+    open((index - 1 + total) % total, "prev");
   }
 
   const onKeydown = (event: KeyboardEvent): void => {
@@ -177,6 +182,31 @@ export function createLightbox(
     if (event.key === "ArrowRight") {
       event.preventDefault();
       next();
+      return;
+    }
+    if (event.key === "Tab" && overlay) {
+      const focusable = Array.from(
+        overlay.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])',
+        ),
+      );
+      if (focusable.length === 0) return;
+      const first = focusable[0]!;
+      const last = focusable[focusable.length - 1]!;
+      const active = document.activeElement;
+      if (
+        event.shiftKey &&
+        (active === first || !overlay.contains(active))
+      ) {
+        event.preventDefault();
+        last.focus();
+      } else if (
+        !event.shiftKey &&
+        (active === last || !overlay.contains(active))
+      ) {
+        event.preventDefault();
+        first.focus();
+      }
     }
   };
 

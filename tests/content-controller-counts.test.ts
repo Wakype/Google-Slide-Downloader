@@ -14,6 +14,7 @@ const runMessage = {
 
 const summary: CaptureSummary = {
   total: 4,
+  totalKnown: true,
   captured: 0,
   failed: [],
   reachedEnd: false,

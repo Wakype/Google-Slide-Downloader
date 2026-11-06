@@ -61,9 +61,8 @@ describe("extension manifest", () => {
 
   it("requests only the permissions the extension needs", () => {
     const manifest = readManifest();
-    expect(manifest.permissions).toEqual(
-      expect.arrayContaining(["tabs", "scripting", "storage"]),
-    );
+    expect(manifest.permissions).toEqual(["tabs", "scripting", "storage"]);
+    expect(manifest.permissions).not.toContain("downloads");
     expect(manifest.host_permissions).toEqual(
       expect.arrayContaining([
         "https://docs.google.com/presentation/*",

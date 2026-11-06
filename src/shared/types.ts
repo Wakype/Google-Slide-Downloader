@@ -51,6 +51,7 @@ export interface CaptureProgress {
 
 export interface CaptureSummary {
   total: number;
+  totalKnown: boolean;
   captured: number;
   failed: number[];
   reachedEnd: boolean;

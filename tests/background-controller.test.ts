@@ -392,6 +392,7 @@ describe("background capture controller", () => {
       type: "CAPTURE_COMPLETE",
       sessionId: "session-1",
       total: 3,
+      totalKnown: true,
       captured: 3,
       failed: [],
       reachedEnd: true,
@@ -405,6 +406,29 @@ describe("background capture controller", () => {
       url: "chrome-extension://test/preview.html?session=session-1",
     });
     expect(chrome.action.setBadgeText).toHaveBeenCalledWith({ text: "✓" });
+  });
+
+  it("stores an unknown deck total as null", async () => {
+    const chrome = createFakeChrome();
+    await store.createSession(baseSession("session-1"));
+    const controller = createBackgroundController({
+      chrome: chrome.api,
+      store,
+      now: () => 1,
+      uuid: () => "unused",
+    });
+
+    await controller.handleComplete({
+      type: "CAPTURE_COMPLETE",
+      sessionId: "session-1",
+      total: 3,
+      totalKnown: false,
+      captured: 3,
+      failed: [],
+      reachedEnd: true,
+    });
+
+    expect((await store.getSession("session-1"))?.total).toBeNull();
   });
 
   it("opens the preview with partial results on error", async () => {
@@ -421,6 +445,7 @@ describe("background capture controller", () => {
       type: "CAPTURE_ERROR",
       sessionId: "session-1",
       total: 3,
+      totalKnown: true,
       captured: 1,
       failed: [3],
       error: "quota exceeded",

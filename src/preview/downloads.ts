@@ -7,6 +7,20 @@ export interface DownloadDeps {
   openTab(url: string): void;
 }
 
+export function saveWithAnchor(
+  doc: Document,
+  url: string,
+  filename: string,
+): void {
+  const anchor = doc.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  anchor.rel = "noopener";
+  doc.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+}
+
 export async function downloadSlide(
   slide: PreviewSlide,
   deps: DownloadDeps,

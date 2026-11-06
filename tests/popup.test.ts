@@ -101,7 +101,7 @@ describe("renderPopup", () => {
       vi.fn(),
     );
 
-    expect(root.textContent).toContain("/pub, /pubembed, /embed, or /preview");
+    expect(root.textContent).toContain("/pub, /pubembed, /embed, /preview, or /present");
     expect(startButton(root).disabled).toBe(true);
   });
 
@@ -163,7 +163,7 @@ describe("popup controller", () => {
 
     await controller.init();
 
-    expect(root.textContent).toContain("/pub, /pubembed, /embed, or /preview");
+    expect(root.textContent).toContain("/pub, /pubembed, /embed, /preview, or /present");
     expect(startButton(root).disabled).toBe(true);
   });
 
@@ -215,5 +215,8 @@ describe("popup controller", () => {
     expect(root.textContent).toContain("A capture is already running");
     expect(env.close).not.toHaveBeenCalled();
     expect(startButton(root).disabled).toBe(false);
+
+    startButton(root).click();
+    expect(env.sendStart).toHaveBeenCalledTimes(2);
   });
 });
