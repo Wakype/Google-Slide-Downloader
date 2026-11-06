@@ -43,6 +43,8 @@ export function createContentController(
 
   async function execute(message: RunCaptureMessage): Promise<void> {
     let total = 0;
+    let captured = 0;
+    let failed: number[] = [];
     let summary: CaptureSummary = {
       total: 0,
       captured: 0,
@@ -71,9 +73,11 @@ export function createContentController(
           const response = await deps.runtime.sendMessage(payload);
           if (!isAck(response)) throw new Error("slide-not-stored");
           if (!response.ok) throw new Error(response.error);
+          captured += 1;
         },
         onProgress: async (progress) => {
           total = progress.total;
+          failed = [...progress.failed];
           const payload: CaptureProgressMessage = {
             type: "CAPTURE_PROGRESS",
             sessionId: message.sessionId,
@@ -90,7 +94,14 @@ export function createContentController(
 
       summary = await runCaptureImpl(options);
     } catch (error) {
-      summary = { ...summary, error: toErrorMessage(error) };
+      summary = {
+        total,
+        captured,
+        failed,
+        reachedEnd: false,
+        cancelled: false,
+        error: toErrorMessage(error),
+      };
     }
 
     try {

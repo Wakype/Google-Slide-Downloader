@@ -29,7 +29,7 @@ function demoSlideSvg(
 </svg>`;
 }
 
-export function createDemoCapture(): {
+export function createDemoCapture(now: number = Date.now()): {
   session: CaptureSession;
   slides: SlideRecord[];
 } {
@@ -38,7 +38,7 @@ export function createDemoCapture(): {
     tabId: 0,
     sourceUrl: "https://docs.google.com/presentation/d/e/demo/pub",
     title: "Demo deck — product launch",
-    createdAt: Date.now(),
+    createdAt: now,
     total: 6,
     captured: 6,
     failed: [],

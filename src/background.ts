@@ -11,15 +11,25 @@ import type {
 } from "./shared/messages";
 import { openSessionStore } from "./shared/session-store";
 
-const store = await openSessionStore();
-const controller = createBackgroundController({
-  chrome: chrome as unknown as BackgroundChrome,
-  store,
-  now: () => Date.now(),
-  uuid: () => crypto.randomUUID(),
-});
+type Controller = ReturnType<typeof createBackgroundController>;
+
+const storePromise = openSessionStore();
+let controllerPromise: Promise<Controller> | null = null;
+
+function getController(): Promise<Controller> {
+  controllerPromise ??= storePromise.then((store) =>
+    createBackgroundController({
+      chrome: chrome as unknown as BackgroundChrome,
+      store,
+      now: () => Date.now(),
+      uuid: () => crypto.randomUUID(),
+    }),
+  );
+  return controllerPromise;
+}
 
 async function handle(message: RuntimeMessage): Promise<unknown> {
+  const controller = await getController();
   switch (message.type) {
     case "START_CAPTURE":
       return controller.startCapture();
@@ -52,5 +62,11 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 });
 
 chrome.runtime.onInstalled.addListener(() => {
-  void chrome.action.setBadgeBackgroundColor({ color: "#4f46e5" });
+  void chrome.action
+    .setBadgeBackgroundColor({ color: "#4f46e5" })
+    .catch(() => undefined);
 });
+
+void chrome.action
+  .setBadgeBackgroundColor({ color: "#4f46e5" })
+  .catch(() => undefined);

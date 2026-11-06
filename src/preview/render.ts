@@ -184,7 +184,7 @@ export function renderPreview(
   actions.append(status);
   main.append(actions);
 
-  if (model.status === "error" && model.error) {
+  if (model.status === "error" && model.error && !model.missing) {
     main.append(banner("error", "Capture stopped", model.error));
   }
   if (model.failed.length > 0) {

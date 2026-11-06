@@ -1,6 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createDemoCapture } from "../src/preview/demo";
-import { buildPreviewModel, type PreviewModel } from "../src/preview/model";
+import {
+  buildPreviewModel,
+  createMissingModel,
+  type PreviewModel,
+} from "../src/preview/model";
 import { renderPreview } from "../src/preview/render";
 
 function buttonByText(root: HTMLElement, text: string): HTMLButtonElement {
@@ -130,6 +134,14 @@ describe("renderPreview", () => {
     close.click();
     expect(callbacks.onClose).toHaveBeenCalledTimes(1);
     expect(root.querySelectorAll("article.slide-card")).toHaveLength(0);
+  });
+
+  it("renders only the empty state for a missing capture", () => {
+    const root = document.getElementById("app") as HTMLElement;
+    renderPreview(root, createMissingModel(), handlers());
+
+    expect(root.querySelector(".banner")).toBeNull();
+    expect(root.textContent).toContain("Capture not found");
   });
 
   it("renders six cards for the demo capture", () => {

@@ -253,13 +253,18 @@ export function createBackgroundController(
   }
 
   async function handleError(message: CaptureErrorMessage): Promise<void> {
+    const existing = await deps.store.getSession(message.sessionId);
     await finishSession(
       message.sessionId,
       {
         status: "error",
-        captured: message.captured,
-        total: message.total,
-        failed: message.failed,
+        captured: Math.max(existing?.captured ?? 0, message.captured),
+        total:
+          message.total > 0 ? message.total : (existing?.total ?? null),
+        failed:
+          message.failed.length > 0
+            ? message.failed
+            : (existing?.failed ?? []),
         error: message.error,
       },
       "!",
