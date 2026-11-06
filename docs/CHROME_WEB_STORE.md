@@ -1,4 +1,8 @@
-# Publishing to the Chrome Web Store
+# Publishing to the Chrome Web Store (optional)
+
+> GitHub Releases is the primary distribution path and requires no paid developer account.
+> This guide is optional and applies only if you decide to pay the Chrome Web Store
+> developer registration fee.
 
 This guide assumes the extension builds successfully with `npm run check` and that the
 repository is public at `https://github.com/Wakype/Google-Slide-Downloader`.
