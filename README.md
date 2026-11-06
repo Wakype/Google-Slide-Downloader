@@ -62,7 +62,8 @@ Once all images (`Slide_001.png`, `Slide_002.png`, etc.) are downloaded to your 
 
 
 ### Option A: Using Online Tools (Easy Way)
-- [PDF24 Tools](https://tools.pdf24.org/en/images-to-pdf)
+- [PDF24 Merge PDF](https://tools.pdf24.org/en/merge-pdf) — accepts PNG/JPG images directly and converts them into a single PDF.
+- [PDF24 Images to PDF](https://tools.pdf24.org/en/images-to-pdf) — dedicated image-only converter.
 - Etc.
 
 ### Option B: Using Python (`img2pdf`)
