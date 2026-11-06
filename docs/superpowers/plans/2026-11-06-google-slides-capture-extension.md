@@ -82,7 +82,7 @@ interface CaptureSummary {
 
 ```ts
 function isSlidesPresentationUrl(raw: string | undefined): boolean;
-function formatSlideFilename(index: number): string;       // Slide_001.png
+function formatSlideFilename(index: number): string;       // slide_001.png
 function parseTotalSlides(doc: Document): number | null;
 function getSlideSignature(doc: Document): string;
 function sanitizeFilenamePart(value: string): string;
@@ -243,14 +243,14 @@ Final README, icons, demo mode, and the verified `dist/` build.
 1. Write `tests/utils.test.ts` covering:
    - `isSlidesPresentationUrl` accepts `.../d/e/ID/pub`, `.../pubembed`, and
      `.../present`; rejects the editor, other hosts, and malformed URLs.
-   - `formatSlideFilename(1) === "Slide_001.png"` and `formatSlideFilename(1234)`
+   - `formatSlideFilename(1) === "slide_001.png"` and `formatSlideFilename(1234)`
      pads to at least 3 digits.
    - `parseTotalSlides` reads `[aria-setsize]`, falls back to "3 of 12" caption text,
      and returns `null` when absent.
    - `getSlideSignature` changes when the caption or SVG content changes.
    - `sanitizeFilenamePart` removes path separators and reserved characters.
-   - `buildSlideDownloadPath("My Deck", "Slide_001.png") ===
-     "Slides/My Deck/Slide_001.png"`.
+   - `buildSlideDownloadPath("My Deck", "slide_001.png") ===
+     "Slides/My Deck/slide_001.png"`.
    Run: `npx vitest run tests/utils.test.ts`
    Expected: FAIL because the modules do not exist.
 
@@ -399,7 +399,7 @@ Final README, icons, demo mode, and the verified `dist/` build.
 
 1. Write `tests/preview-model.test.ts`:
    - builds title, subtitle, captured time, count, failed labels;
-   - maps slides to cards with `Slide_001.png` and folder path;
+   - maps slides to cards with `slide_001.png` and folder path;
    - handles a null/empty session with `isEmpty`.
    Run: FAIL.
 
@@ -418,7 +418,7 @@ Final README, icons, demo mode, and the verified `dist/` build.
    inline SVG icons using `currentColor`. Run: PASS.
 
 5. Write `tests/downloads.test.ts` with fake `chrome.downloads.download`:
-   - one slide downloads to `Slides/<deck>/Slide_001.png` with
+   - one slide downloads to `Slides/<deck>/slide_001.png` with
      `conflictAction: "uniquify"` and `saveAs: false`;
    - download-all calls downloads in index order;
    - download-all-then-merge awaits downloads, waits, then opens

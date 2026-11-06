@@ -6,7 +6,10 @@ export type IconName =
   | "merge"
   | "alert"
   | "image"
-  | "close";
+  | "close"
+  | "chevron-left"
+  | "chevron-right"
+  | "flag";
 
 interface IconPart {
   d: string;
@@ -50,6 +53,12 @@ const ICONS: Record<IconName, IconPart[]> = {
   close: [
     { d: "m6 6 12 12", fill: "none" },
     { d: "M18 6 6 18", fill: "none" },
+  ],
+  "chevron-left": [{ d: "m15 18-6-6 6-6", fill: "none" }],
+  "chevron-right": [{ d: "m9 18 6-6-6-6", fill: "none" }],
+  flag: [
+    { d: "M5 21V4", fill: "none" },
+    { d: "M5 5h10l-2 4 2 4H5", fill: "none" },
   ],
 };
 

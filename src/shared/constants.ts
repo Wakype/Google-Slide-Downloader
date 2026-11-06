@@ -16,3 +16,6 @@ export const TIMING = {
 } as const;
 
 export const PDF24_MERGE_URL = "https://tools.pdf24.org/en/merge-pdf";
+
+export const REPORT_ISSUE_URL =
+  "https://github.com/Wakype/Google-Slide-Downloader/issues/new?template=bug_report.yml";

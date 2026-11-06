@@ -55,9 +55,9 @@ describe("isSlidesPresentationUrl", () => {
 
 describe("formatSlideFilename", () => {
   it("pads the slide number to three digits", () => {
-    expect(formatSlideFilename(1)).toBe("Slide_001.png");
-    expect(formatSlideFilename(42)).toBe("Slide_042.png");
-    expect(formatSlideFilename(1234)).toBe("Slide_1234.png");
+    expect(formatSlideFilename(1)).toBe("slide_001.png");
+    expect(formatSlideFilename(42)).toBe("slide_042.png");
+    expect(formatSlideFilename(1234)).toBe("slide_1234.png");
   });
 });
 
@@ -108,17 +108,17 @@ describe("download paths", () => {
   });
 
   it("builds a slides folder path with a safe deck name", () => {
-    expect(buildSlideDownloadPath("My Deck", "Slide_001.png")).toBe(
-      "Slides/My Deck/Slide_001.png",
+    expect(buildSlideDownloadPath("My Deck", "slide_001.png")).toBe(
+      "Slides/My Deck/slide_001.png",
     );
-    expect(buildSlideDownloadPath("", "Slide_001.png")).toBe(
-      "Slides/Presentation/Slide_001.png",
+    expect(buildSlideDownloadPath("", "slide_001.png")).toBe(
+      "Slides/Presentation/slide_001.png",
     );
   });
 
   it("strips the browser title suffix from the deck folder", () => {
-    expect(buildSlideDownloadPath("My Deck - Google Slides", "Slide_001.png")).toBe(
-      "Slides/My Deck/Slide_001.png",
+    expect(buildSlideDownloadPath("My Deck - Google Slides", "slide_001.png")).toBe(
+      "Slides/My Deck/slide_001.png",
     );
   });
 });

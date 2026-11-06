@@ -302,7 +302,7 @@ describe("background capture controller", () => {
     expect(slides).toHaveLength(1);
     expect(slides[0]).toMatchObject({
       index: 1,
-      filename: "Slide_001.png",
+      filename: "slide_001.png",
       width: 1920,
       height: 1080,
       warning: "1 embedded image could not be inlined.",

@@ -29,7 +29,7 @@ function slide(sessionId: string, index: number): SlideRecord {
     id: `${sessionId}:${index}`,
     sessionId,
     index,
-    filename: `Slide_00${index}.png`,
+    filename: `slide_00${index}.png`,
     blob: new Blob([`slide-${index}`], { type: "image/png" }),
     width: 1920,
     height: 1080,

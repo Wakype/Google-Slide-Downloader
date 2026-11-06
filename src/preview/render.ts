@@ -1,3 +1,4 @@
+import { REPORT_ISSUE_URL } from "../shared/constants";
 import { createIcon, type IconName } from "../shared/icons";
 import type { PreviewModel, PreviewSlide } from "./model";
 
@@ -5,6 +6,7 @@ export interface PreviewHandlers {
   onDownloadAll(): void;
   onDownloadAllAndMerge(): void;
   onDownloadSlide(slide: PreviewSlide): void;
+  onOpenSlide(slide: PreviewSlide): void;
   onClose(): void;
 }
 
@@ -59,12 +61,17 @@ function slideCard(
   const card = element("article", "slide-card");
 
   const figure = element("figure", "slide-thumb");
+  const open = element("button", "slide-open");
+  open.type = "button";
+  open.setAttribute("aria-label", `Open Slide ${slide.index} preview`);
   const image = element("img");
   image.src = slide.downloadUrl;
   image.alt = `Slide ${slide.index} preview`;
   image.loading = "lazy";
   image.decoding = "async";
-  figure.append(image);
+  open.append(image);
+  open.addEventListener("click", () => handlers.onOpenSlide(slide));
+  figure.append(open);
 
   const footer = element("div", "slide-footer");
   const details = element("div", "slide-details");
@@ -135,7 +142,12 @@ export function renderPreview(
   const header = element("header", "topbar");
 
   const brand = element("div", "brand");
-  brand.append(createIcon("slides"), element("span", "brand-name", "Slides Capture"));
+  const logo = element("img", "brand-logo");
+  logo.src = "./icons/icon128.png";
+  logo.alt = "Slides Capture";
+  logo.width = 40;
+  logo.height = 40;
+  brand.append(logo);
 
   const heading = element("div", "deck-heading");
   heading.append(
@@ -149,7 +161,17 @@ export function renderPreview(
       } · ${model.capturedAt}`,
     ),
   );
-  header.append(brand, heading);
+  const headerActions = element("div", "topbar-actions");
+  const report = element("a", "icon-button report-button");
+  report.href = REPORT_ISSUE_URL;
+  report.target = "_blank";
+  report.rel = "noreferrer";
+  report.setAttribute("aria-label", "Report an issue");
+  report.title = "Report an issue";
+  report.append(createIcon("flag"));
+  headerActions.append(report);
+
+  header.append(brand, heading, headerActions);
   app.append(header);
 
   const main = element("main", "content");
@@ -232,7 +254,23 @@ export function renderPreview(
   }
 
   const footer = element("footer", "footer");
-  footer.append(element("p", "footer-note", "PNG capture · PDF24 merge"));
+  footer.append(
+    element("p", "footer-title", "Disclaimer"),
+    element(
+      "p",
+      "footer-text",
+      "This tool is intended for educational, personal archival, and fair-use reference only.",
+    ),
+  );
+  const disclaimer = element("ul", "footer-list");
+  for (const item of [
+    "Respect copyright and content ownership. Do not scrape, redistribute, or commercially exploit presentations without authorization.",
+    "Users are responsible for complying with Google's Terms of Service and applicable privacy laws.",
+    'The software is provided "as is", without warranty. The author assumes no liability for misuse, rate limiting, or data loss.',
+  ]) {
+    disclaimer.append(element("li", undefined, item));
+  }
+  footer.append(disclaimer);
   main.append(footer);
   app.append(main);
   root.append(app);

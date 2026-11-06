@@ -2,6 +2,7 @@ import { openSessionStore } from "../shared/session-store";
 import { toErrorMessage } from "../shared/utils";
 import { createDemoCapture } from "./demo";
 import { downloadAll, downloadAllAndMerge, downloadSlide, type DownloadDeps } from "./downloads";
+import { createLightbox } from "./lightbox";
 import {
   buildPreviewModel,
   createMissingModel,
@@ -118,10 +119,29 @@ async function main(): Promise<void> {
     }
   }
 
+  const lightbox = createLightbox(model, {
+    onDownload: (slide) => runDownload(model, "one", slide),
+    onClose: (closedIndex) => {
+      const closedSlide = model.slides[closedIndex];
+      if (!closedSlide) return;
+      root
+        .querySelector<HTMLButtonElement>(
+          `button[aria-label="Open Slide ${closedSlide.index} preview"]`,
+        )
+        ?.focus();
+    },
+  });
+
   renderPreview(root, model, {
     onDownloadAll: () => runDownload(model, "all"),
     onDownloadAllAndMerge: () => runDownload(model, "merge"),
     onDownloadSlide: (slide) => runDownload(model, "one", slide),
+    onOpenSlide: (slide) => {
+      const index = model.slides.findIndex(
+        (candidate) => candidate.index === slide.index,
+      );
+      if (index >= 0) lightbox.open(index);
+    },
     onClose: () => window.close(),
   });
 
@@ -136,6 +156,7 @@ void main().catch((error: unknown) => {
       onDownloadAll: () => undefined,
       onDownloadAllAndMerge: () => undefined,
       onDownloadSlide: () => undefined,
+      onOpenSlide: () => undefined,
       onClose: () => window.close(),
     },
   );

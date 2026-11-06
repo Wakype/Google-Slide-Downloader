@@ -14,7 +14,7 @@ export function isSlidesPresentationUrl(raw: string | undefined): boolean {
 }
 
 export function formatSlideFilename(index: number): string {
-  return `Slide_${String(index).padStart(3, "0")}.png`;
+  return `slide_${String(index).padStart(3, "0")}.png`;
 }
 
 export function parseTotalSlides(doc: Document): number | null {

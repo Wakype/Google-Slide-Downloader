@@ -1,0 +1,74 @@
+name: Bug report
+description: Report a problem with Slides Capture
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a problem. Please include enough detail to
+        reproduce it. Remove private presentation IDs or content before posting.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe the problem and what you expected instead.
+      placeholder: The extension advanced through the deck, but the preview stayed empty.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: List the exact steps, including whether the deck is /pub, /pubembed, /embed, or /present.
+      placeholder: |
+        1. Open a published Google Slides deck.
+        2. Click the Slides Capture icon.
+        3. Press Start Capture.
+        4. See ...
+    validations:
+      required: true
+
+  - type: input
+    id: deck-url
+    attributes:
+      label: Presentation URL (optional)
+      description: A public URL is helpful. Do not share private or confidential decks.
+      placeholder: https://docs.google.com/presentation/d/e/.../pubembed
+
+  - type: input
+    id: chrome-version
+    attributes:
+      label: Chrome version
+      placeholder: 140.0.7339.80
+    validations:
+      required: true
+
+  - type: input
+    id: extension-version
+    attributes:
+      label: Slides Capture version
+      description: Found on chrome://extensions.
+      placeholder: 1.0.0
+
+  - type: textarea
+    id: console
+    attributes:
+      label: Console or service-worker errors
+      description: Paste any errors from the presentation tab console or the extension's service worker console.
+      render: shell
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I reloaded the unpacked extension after building it.
+          required: true
+        - label: I kept the presentation tab visible during capture.
+          required: true
+        - label: I removed private content from this report.
+          required: true
